@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Email Alert</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f9fafb;
+        color: #111827;
+      }
+      .container {
+        max-width: 1080px;
+        margin: 40px auto;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+      }
+     .header {
+        background-color: #0f172a;
+        color: #ffffff;
+        padding: 24px;
+        text-align: center;
+      }
+      .content {
+        padding: 30px;
+        text-align: center;
+      }
+      .content h2 {
+        margin-top: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .footer {
+        font-size: 12px;
+        color: #6b7280;
+        text-align: center;
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>{{appName}}</h1>
+      </div>
+      <div class="content">
+        <h2>Email Verification Pending</h2>
+        <p>Hello {{toPerson}},</p>
+        <p>
+          This is a reminder that you need to verify your email within <strong>7 days</strong>.
+        </p>
+        <p>
+          If verification is not completed within this period, your email and associated data will be <strong>deleted</strong> from our system.
+        </p>
+        <p style="margin-top: 20px;">
+          If you did not initiate this process, you can safely ignore this message.
+        </p>
+      </div>
+      <div class="footer">
+        &copy; {{year}} {{appName}}. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>

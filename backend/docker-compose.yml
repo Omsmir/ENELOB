@@ -1,0 +1,98 @@
+services:
+    app:
+        build: .
+        container_name: app
+        ports:
+            - '8090:8090'
+        volumes:
+            - ./:/app
+            - /app/node_modules
+        restart: unless-stopped
+        depends_on:
+            - mongodb
+        networks:
+            - backend
+    mongodb:
+        image: mongo:7
+        container_name: mongo_db
+        restart: always
+        ports:
+            - '27017:27017'
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: omar
+            MONGO_INITDB_ROOT_PASSWORD: omarsamir1
+        volumes:
+            - mongo-data:/data/db
+        networks:
+            - backend
+    nginx:
+        image: nginx:alpine
+        container_name: nginx
+        restart: unless-stopped
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./nginx/ssl:/etc/nginx/ssl
+        networks:
+            - backend
+        depends_on:
+            - app
+
+volumes:
+    mongo-data:
+
+networks:
+    backend:
+        driver: bridge
+# services:
+#   app:
+#     build: .
+#     container_name: oop
+#     ports:
+#       - "8090:8090"
+#     volumes:
+#       - ./:/app
+#       - /app/node_modules
+#     restart: unless-stopped
+#     depends_on:
+#       - mongodb
+#     networks:
+#       - backend
+
+#   mongodb:
+#     image: mongo:7
+#     container_name: mongo-db
+#     restart: always
+#     ports:
+#       - "27017:27017"
+#     environment:
+#       MONGO_INITDB_ROOT_USERNAME: omar
+#       MONGO_INITDB_ROOT_PASSWORD: omarsamir1
+#     volumes:
+#       - mongo-data:/data/db
+#     networks:
+#       - backend
+
+#   nginx:
+#     image: nginx:alpine
+#     container_name: nginx
+#     restart: unless-stopped
+#     ports:
+#       - "80:80"
+#       - "443:443"
+#     volumes:
+#       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+#       - ./nginx/ssl:/etc/nginx/ssl
+#     networks:
+#       - backend
+#     depends_on:
+#       - app
+
+# volumes:
+#   mongo-data:
+
+# networks:
+#   backend:
+#     driver: bridge
