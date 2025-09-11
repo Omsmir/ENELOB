@@ -6,35 +6,7 @@ declare interface ConstructedLayoutProps {
 
 declare type theme = "github-dark" | "vitesse-dark" | "nord";
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      full_name: string;
-      verified?: boolean;
-      accessToken?: string;
-      refreshToken?: string;
-    } & DefaultSession["user"];
-  }
 
-  interface User {
-    id: string;
-    full_name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    verified?: boolean;
-    trigger: any;
-    session: any;
-    accessToken: string;
-    refreshToken?: string | undefined;
-  }
-}
 
 declare type registerProps = {
   full_name: string;
@@ -45,6 +17,10 @@ declare type registerProps = {
   birthDate: Date;
 };
 
+declare type LoginResponseI = {
+  accessToken: string;
+  message:string
+};
 declare type Login = {
   email: string;
   password: string;
@@ -63,8 +39,6 @@ declare type ResponseMessageI = {
 declare type sendFriendRequest = {
   id: string;
   friendId: string;
-  accessToken?: string;
-  refreshToken?: string;
 };
 
 declare type User = {
@@ -73,6 +47,7 @@ declare type User = {
   full_name: string;
   verified?: boolean;
   email: string;
+  gender:string;
   profileImg?: {
     url: string;
   };
@@ -80,21 +55,43 @@ declare type User = {
   friendRequests: string[];
   friends: string[];
   sendRequests: string[];
+  createdAt:Date;
+  updatedAt:Date;
+
+};
+
+
+
+declare type UserQueryI = {
+  id:string
+}
+declare type UserQueryResponseI = {
+  user:User
+}
+
+
+declare type UserAuth = {
+  _id: string;
+  lastSeenAt: Date | undefined;
+  full_name: string;
+  verified?: boolean;
+  email: string;
+  profileImg?:string;
+  accessToken: string;
+
+  expiresAt: number | undefined;
+  [key: string]: any;
 };
 
 declare type discoverFriendI = {
   id: string;
   friendName: string;
-  accessToken?: string;
-  refreshToken?: string;
 };
 
 declare type handleFriendRequestI = {
   id: string;
   friendId: string;
   acception?: string;
-  accessToken?: string;
-  refreshToken?: string;
 };
 
 declare type UpdateProfilePicture = {
@@ -107,35 +104,30 @@ declare type multipleQueriesI = {
   query: "friends" | "friendRequests" | "sendRequests";
   limit: number;
   cursor?: string | null;
-  accessToken?: string;
-  refreshToken?: string;
 };
 declare type multipleQueriesIResponse = {
   users: User[];
   nextCursor: string;
 };
 declare type reIssueAccessTokenProps = {
-  readonly refreshToken: string;
   id: string;
+
 };
 
 declare type RefreshTokenResponse = {
-  refreshToken: string;
-  accessToken: string;
+  message:string;
   sessionState: boolean;
 };
 
 declare type ReissuseRefreshTokenResponseI = {
-  id: string;
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: number | undefined; // or Date if your backend returns a Date
+  _id: string;
+  lastSeenAt: Date;
+  full_name: string;
+  verified?: boolean;
   email: string;
-  name: string;
-  profileImg?: {
-    url: string;
-  };
-  verified: boolean;
+  profileImg?:string
+  accessToken: string;
+  expiresAt: number | undefined;
 };
 
 declare type users = {
@@ -208,4 +200,3 @@ declare type logoutProps = {
 declare type CheckSessionActiveStatus = {
   friendId: string;
 };
-

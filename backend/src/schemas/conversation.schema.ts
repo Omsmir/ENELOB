@@ -39,5 +39,13 @@ export const getConversationSchema = z.object({
     ...getConversationPayload,
 });
 
+
+export const MarkAsSeenSchema = z.object({
+    ...params,
+    ...querys
+})
+
 export type createConversationSchemaInterface = z.infer<typeof createConversationSchema>;
 export type getConversationSchemaInterface = z.infer<typeof getConversationSchema>;
+export type MarkAsSeenSchemaInterface = z.infer<typeof MarkAsSeenSchema>;
+

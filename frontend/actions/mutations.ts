@@ -1,6 +1,6 @@
 import { DashboardHook } from "@/components/context/Dashboardprovider";
 import HandleAxiosErrors from "@/components/HandleAxiosErrors";
-import { LoginApi, Services } from "@/actions/sdk.gen";
+import { Services } from "@/actions/sdk.gen";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { NotificationInstance } from "antd/es/notification/interface";
 import Swal from "sweetalert2";
@@ -9,13 +9,16 @@ import {
   CheckSessionActiveStatus,
   ConversationUpdatingProps,
   handleFriendRequestI,
+  Login,
   logoutProps,
   registerProps,
+  reIssueAccessTokenProps,
   sendFriendRequest,
   UpdateProfilePicture,
 } from "@/types";
-import { signOut } from "next-auth/react";
-
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { useDispatch } from "react-redux";
+import { logout, setUserSession } from "@/components/store/slices/AuthReducer";
 export class Mutations {
   public static UseRegister = (api: NotificationInstance) => {
     const login = Mutations.useLogin(api, false);
@@ -53,9 +56,12 @@ export class Mutations {
 
   public static useLogin = (api: NotificationInstance, loginState: boolean) => {
     const { setIsLoading } = DashboardHook();
+    const dispatch = useDispatch();
+
     const router = useRouter();
     return useMutation({
-      mutationFn: LoginApi,
+      mutationFn: ({ email, password }: Login) =>
+        Services.login({ email, password }),
       onMutate: () => {
         setIsLoading(true);
       },
@@ -64,15 +70,33 @@ export class Mutations {
         HandleAxiosErrors({ api, error });
       },
       onSuccess: async (response) => {
+        const decodedToken = jwt.decode(response.accessToken) as JwtPayload;
+
+        const session = {
+          email: decodedToken?.email,
+          expiresAt: decodedToken?.exp && decodedToken.exp * 1000,
+          _id: decodedToken?._id,
+          full_name: decodedToken?.full_name,
+          profileImg: decodedToken?.profileImg.url,
+          verified: decodedToken?.verified,
+          accessToken: response.accessToken,
+          lastSeenAt: decodedToken.lastSeenAt,
+        };
+
+        dispatch(setUserSession(session));
+
+        console.log(response);
+
         if (loginState) {
           Swal.fire({
             position: "center",
             icon: "success",
-            title: "Logged in successfully",
+            title: response.message || "logged in successfully",
             showConfirmButton: false,
             timer: 1500,
           });
         }
+
         router.push("/dashboard");
         setIsLoading(false);
       },
@@ -102,8 +126,6 @@ export class Mutations {
   };
 
   public static useHandleFriendRequest = (api: NotificationInstance) => {
-    const queryClient = useQueryClient();
-
     return useMutation({
       mutationFn: ({ id, friendId, acception }: handleFriendRequestI) =>
         Services.handleFriendRequest({ id, friendId, acception }),
@@ -150,7 +172,11 @@ export class Mutations {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: ({ id, recipientId, content }: ConversationUpdatingProps) =>
-        Services.CreateOrUpdateAConversation({ id, recipientId, content }),
+        Services.CreateOrUpdateAConversation({
+          id,
+          recipientId,
+          content,
+        }),
       onMutate: () => {},
       onError: async (error) => {
         HandleAxiosErrors({ api, error });
@@ -168,6 +194,7 @@ export class Mutations {
 
   public static useLogout = (api: NotificationInstance) => {
     const router = useRouter();
+    const dispatch = useDispatch();
     return useMutation({
       mutationFn: ({ id }: logoutProps) => Services.logout({ id }),
       onError: async (error) => {
@@ -175,7 +202,7 @@ export class Mutations {
       },
       onSuccess: async (response) => {
         router.push("/");
-        signOut();
+        dispatch(logout());
       },
     });
   };
@@ -189,4 +216,17 @@ export class Mutations {
       },
     });
   };
+
+
+  public static useReissueAccessToken = (api: NotificationInstance) => {
+    return useMutation({
+      mutationFn: ({id}:reIssueAccessTokenProps) => Services.reIssueAccessToken({id}),
+      onError:(error) => {
+        HandleAxiosErrors({api,error})
+      },
+      onSuccess:async(reponse) => {
+        
+      }
+    })
+  }
 }

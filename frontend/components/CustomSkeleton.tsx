@@ -69,6 +69,7 @@ const RenderSkeleton = ({ props }: { props: CustomSkeletonProps }) => {
                         src={props.src || '/assets/images/dr-cameron.png'}
                         loading="lazy"
                         onLoad={setHandler}
+                        alt='avatar'
                         className="w-full h-full object-cover object-center "
                     />
                 </span>

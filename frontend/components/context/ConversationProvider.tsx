@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { User } from "@/types";
 import {
   createContext,
@@ -9,8 +9,8 @@ import {
 } from "react";
 
 interface ConversationProviderProps {
-  setFriend: Dispatch<SetStateAction<User | undefined>>;
-  friend: User | undefined;
+  setUnseenMessages: Dispatch<SetStateAction<number>>;
+  unseenMessages: number;
 }
 
 const ConversationContext = createContext<ConversationProviderProps | null>(
@@ -22,9 +22,9 @@ export const ConversationProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [friend, setFriend] = useState<User | undefined>(undefined);
+  const [unseenMessages, setUnseenMessages] = useState<number>(0);
   return (
-    <ConversationContext.Provider value={{ friend, setFriend }}>
+    <ConversationContext.Provider value={{ unseenMessages, setUnseenMessages }}>
       {children}
     </ConversationContext.Provider>
   );

@@ -2,11 +2,13 @@
 import { SidebarTrigger, useSidebar } from "./ui/sidebar";
 import clsx from "clsx";
 import BadgeAvatar from "./Avatar";
-import { useSession } from "next-auth/react";
+import { useSession } from "./store/slices/AuthReducer";
 
 const Navbar = () => {
   const { open, isMobile } = useSidebar();
-  const { data: session } = useSession();
+  const {  session } = useSession();
+
+
   return (
     <nav className="fixed w-full h-14 bg-[var(--sidebar)] z-30 border-b dark:border-slate-700 ">
       <div
@@ -20,15 +22,15 @@ const Navbar = () => {
           {isMobile && <SidebarTrigger />}
           <div className="flex flex-col ">
             <h1 className="text-sm font-medium capitalize hidden sm:block mx-4">
-              good morning {session?.user.name}
+              good morning {session.full_name}
             </h1>
           </div>
         </div>
 
         <div className="flex items-center">
           <BadgeAvatar
-            profileImg={session?.user.image}
-            displayName={session?.user.name}
+            profileImg={session.profileImg}
+            displayName={session.full_name}
             active
             titleClassName="!text-sm"
           />

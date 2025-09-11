@@ -4,7 +4,12 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { Services } from "./sdk.gen";
-import { ConversationQuery, discoverFriendI, multipleQueriesI } from "@/types";
+import {
+  ConversationQuery,
+  discoverFriendI,
+  multipleQueriesI,
+  UserQueryI,
+} from "@/types";
 
 export class Queries {
   public static UseDiscoverFriends = ({ id, friendName }: discoverFriendI) => {
@@ -29,6 +34,7 @@ export class Queries {
           id,
           query,
           limit,
+
           cursor: pageParam ?? null,
         });
       },
@@ -46,6 +52,7 @@ export class Queries {
         await new Promise((resolve) => setTimeout(resolve, 300));
         return Services.GetConversation({
           id,
+
           recipientId,
           cursor: pageParam ?? null,
           limit: 10,
@@ -57,6 +64,13 @@ export class Queries {
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? null,
       getPreviousPageParam: (firstPage) => firstPage.prevCursor ?? null,
       retry: 1,
+    });
+  };
+
+  public static useGetUser = ({ id }: UserQueryI) => {
+    return useQuery({
+      queryKey: [`user-${id}`],
+      queryFn: () => Services.getUser({ id }),
     });
   };
 }

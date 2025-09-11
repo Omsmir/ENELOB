@@ -7,6 +7,7 @@ import { Server } from 'socket.io';
 import {
     createConversationSchemaInterface,
     getConversationSchemaInterface,
+    MarkAsSeenSchemaInterface,
 } from '@/schemas/conversation.schema';
 import HttpException from '@/exceptions/httpException';
 
@@ -165,6 +166,59 @@ class ConversationController extends BaseController {
             }
 
             res.status(200).json({ count: conversation.messages?.length });
+        } catch (error) {
+            this.handleError(res, error);
+        }
+    };
+
+    public markAsSeenHandler = async (
+        req: Request<
+            MarkAsSeenSchemaInterface['params'],
+            {},
+            {},
+            MarkAsSeenSchemaInterface['query']
+        >,
+        res: Response
+    ) => {
+        try {
+            const userId = req.params.id;
+            const recipientId = req.query.recipientId;
+
+            const user = await this.userService.findUser({ _id: userId });
+
+            const recipient = await this.userService.findUser({ _id: recipientId });
+
+            if (!user || !recipient) {
+                throw new HttpException(404, 'either the user or the recipient are not found');
+            }
+
+            const existedConversation = await this.conversationService.getConversation({
+                peers: { $all: [recipientId, userId] },
+            });
+
+            if (!existedConversation) {
+                throw new HttpException(
+                    404,
+                    `there is no existing conversation with ${recipient.full_name}`
+                );
+            }
+            const messages = existedConversation.messages?.filter(
+                (message) => String(message.userId) === recipientId
+            );
+
+            if (!messages || messages?.length < 1) {
+                throw new HttpException(
+                    404,
+                    `there is no existing conversation with ${recipient.full_name}`
+                );
+            }
+
+            for (const msg of messages) {
+                await this.conversationService.updateConversation(
+                    { peers: { $all: [recipientId, userId] } },
+                    { messages: {} }
+                );
+            }
         } catch (error) {
             this.handleError(res, error);
         }

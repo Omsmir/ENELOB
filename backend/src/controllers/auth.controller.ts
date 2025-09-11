@@ -5,6 +5,8 @@ import { Request, Response } from 'express';
 import {
     createUserSchemaInterface,
     FriendsSchemaInterface,
+    getUserSchemaInterface,
+    getUsersSchemaInterface,
     HandleFriendsSchemaInterface,
     MultipleQueriesSchemaInterface,
     SendFriendRequestSchemaInterface,
@@ -102,7 +104,7 @@ class UserController extends BaseController {
         }
     };
 
-    public getUser = async (req: Request<updateUserSchemaInterface['params']>, res: Response) => {
+    public getUser = async (req: Request<getUserSchemaInterface['params']>, res: Response) => {
         try {
             const id = req.params.id;
 

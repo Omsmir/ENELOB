@@ -13,11 +13,11 @@ import {
 } from "../ui/dropdown-menu";
 import { ChevronUp, User } from "lucide-react";
 import ThemeToggle from "../togglers/ToggleTheme";
-import { useSession } from "next-auth/react";
 import LogoutButton from "../togglers/LogoutButton";
+import { useSession } from "../store/slices/AuthReducer";
 
 const SideBarFooter = () => {
-  const { data: session } = useSession();
+  const {  session } = useSession();
   return (
     <SidebarFooter>
       <SidebarMenu>
@@ -25,7 +25,7 @@ const SideBarFooter = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton className="font-medium lowercase whitespace-nowrap transition-colors cursor-pointer hover:bg-slate-100 hover:text-dark-300 hover:dark:hover:bg-[var(--sidebar-accent)] hover:dark:text-slate-50 ">
-                <User /> {session?.user.name}
+                <User /> {session.full_name}
                 <ChevronUp className="ml-auto" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>

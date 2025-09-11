@@ -1,5 +1,11 @@
 import type { AxiosResponse, AxiosRequestConfig } from "axios";
 import { ApiRequestOptions } from "./ApiRequestOptions";
+import { store } from "@/components/store/store";
+import {
+  setUserSession,
+  updateUserSession,
+} from "@/components/store/slices/AuthReducer";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 type Headers = Record<string, string>;
 type Middleware<T> = (value: T) => T | Promise<T>;
@@ -55,9 +61,46 @@ export const OpenAPI: OpenAPIConfig = {
   HEADERS: undefined,
   TOKEN: undefined,
   VERSION: "0.1.0",
-  WITH_CREDENTIALS: false,
+  WITH_CREDENTIALS: true,
   interceptors: {
     request: new Interceptors(),
     response: new Interceptors(),
   },
 };
+
+// RESPONSE INTERCEPTOR
+OpenAPI.interceptors.response.use(async (response) => {
+  // OR if token comes from headers
+  if (response?.headers?.["authorization"]) {
+    const accessToken = response.headers["authorization"];
+    const decoded = jwt.decode(accessToken) as JwtPayload;
+
+    const session = {
+      email: decoded?.email,
+      expiresAt: decoded?.exp && decoded.exp * 1000,
+      _id: decoded?._id,
+      full_name: decoded?.full_name,
+      profileImg: decoded?.profileImg?.url || "",
+      verified: decoded?.verified,
+      accessToken: accessToken,
+      lastSeenAt: decoded.lastSeenAt,
+    };
+    store.dispatch(setUserSession(session));
+  }
+
+  return response;
+});
+
+// REQUEST INTERCEPTOR
+OpenAPI.interceptors.request.use(async (request) => {
+  const state = store.getState();
+  const token = state.auth.session.accessToken;
+  if (token) {
+    request.headers = {
+      ...request.headers,
+      authorization: `${token}`,
+    };
+  }
+
+  return request;
+});

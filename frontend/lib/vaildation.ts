@@ -105,3 +105,9 @@ export const profilePictureSchema = z.object({
 export const VerifyOtp = z.object({
   otp: z.string({ message: "otp is required" }).min(8, "otp is required"),
 });
+
+
+export const AccountSchema = z.object({
+    name: z.string().optional(),
+    gender: z.string().optional(),
+});

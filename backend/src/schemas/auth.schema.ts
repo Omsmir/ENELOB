@@ -125,9 +125,13 @@ export const multipleQueriesSchema = z.object({
     ...multipleQueriesPayload,
 });
 
-export const getUserSchema = z.object({
+export const getUsersSchema = z.object({
     ...params,
     ...getUsersPayload,
+});
+
+export const getUserSchema = z.object({
+    ...params,
 });
 
 export type createUserSchemaInterface = z.infer<typeof createUserSchema>;
@@ -137,4 +141,6 @@ export type SendFriendRequestSchemaInterface = z.infer<typeof SendFriendRequestS
 export type FriendsSchemaInterface = z.infer<typeof FriendsSchema>;
 export type HandleFriendsSchemaInterface = z.infer<typeof handleFriendRequestsSchema>;
 export type MultipleQueriesSchemaInterface = z.infer<typeof multipleQueriesSchema>;
-export type getUsersSchemaInterface = z.infer<typeof getUserSchema>;
+export type getUsersSchemaInterface = z.infer<typeof getUsersSchema>;
+
+export type getUserSchemaInterface = z.infer<typeof getUserSchema>;

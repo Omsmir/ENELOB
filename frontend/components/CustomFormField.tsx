@@ -193,30 +193,35 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
       );
     case FormFieldType.SELECT:
       return (
-        <FormControl>
-          <Select
-            onValueChange={field.onChange}
-            value={field.value}
-            disabled={props.disabled}
-          >
-            <FormControl>
-              <SelectTrigger
-                className={`cursor-pointer bg-slate-100 text-slate-500 w-full shadow-[none]  hover:bg-slate-200 transition-colors ${props.className}`}
-              >
-                <SelectValue placeholder={props.placeholder} />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent
-              className={cn("shad-select-content", props.className)}
+        <div
+          className={`shad-select-custom  ${props.className}`}
+        >
+          <FormControl>
+            <Select
+              onValueChange={field.onChange}
+              value={field.value}
+              disabled={props.disabled}
+        
             >
-              {props.children}
-            </SelectContent>
-          </Select>
-        </FormControl>
+              <FormControl>
+                <SelectTrigger
+                  className={`cursor-pointer dark:text-slate-600 border-0 w-full !shadow-[none] transition-colors`}
+                >
+                  <SelectValue placeholder={props.placeholder} />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent
+                className={cn(" dark:bg-slate-50 dark:text-black max-h-[225px]")}
+              >
+                {props.children}
+              </SelectContent>
+            </Select>
+          </FormControl>
+        </div>
       );
     case FormFieldType.DATE:
       return (
-        <div className="flex justify-center items-center w-full bg-slate-100 rounded-md border ml-1 max-h-[38px]">
+        <div className="shad-select-custom">
           <FormControl>
             <Calendar
               value={field.value || date}

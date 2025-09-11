@@ -1,0 +1,71 @@
+services:
+    backend:
+        build: ./backend
+        container_name: ENELOB
+        ports:
+            - '8090:8090'
+        volumes:
+            - ./backend:/app
+            - /app/node_modules
+        restart: unless-stopped
+        depends_on:
+            - mongodb
+        networks:
+            - backend_enelob
+    mongodb:
+        image: mongo:7
+        container_name: mongo_db_enelob
+        restart: always
+        ports:
+            - '27017:27017'
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: omar
+            MONGO_INITDB_ROOT_PASSWORD: omarsamir1
+        volumes:
+            - mongo-data-enelob:/data/db
+        networks:
+            - backend_enelob
+    nginx:
+        image: nginx:alpine
+        container_name: nginx_enelob
+        restart: unless-stopped
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./nginx/ssl:/etc/nginx/ssl
+        networks:
+            - backend_enelob
+        depends_on:
+            - backend
+            - frontend
+    redis:
+        image: redis/redis-stack:latest
+        container_name: redis-enelob
+        ports:
+            - '6379:6379'
+            - '8001:8001'
+        restart: always
+        environment:
+            REDIS_ARGS: --appendonly yes --requirepass omarsamir1
+        volumes:
+            - redis_data:/data
+        networks:
+            - backend_enelob
+    frontend:
+        build: ./frontend
+        container_name: frontend
+        ports:
+           - "3000:3000" # optional, for local access/debug
+        restart: unless-stopped
+        networks:
+           - backend_enelob        
+
+volumes:
+    mongo-data-enelob:
+    redis_data:
+
+networks:
+    backend_enelob:
+        driver: bridge

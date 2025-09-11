@@ -15,14 +15,17 @@ import { get } from 'lodash';
 import { UserDocument } from '@/models/auth.model';
 import { addHours } from 'date-fns';
 import App from '@/app';
+import { RedisConnection, RedisServices } from '@/utils/redis';
 
 class SessionController extends BaseController {
     private sessionService: SessionService;
     private userService: UserService;
+    private redisService: RedisServices;
     constructor() {
         super();
         this.sessionService = new SessionService();
         this.userService = new UserService();
+        this.redisService = new RedisServices(RedisConnection.getInstance().getClient());
     }
     public loginHandler = async (
         req: Request<{}, {}, LoginSchemaInterface['body']>,
@@ -38,6 +41,7 @@ class SessionController extends BaseController {
             if (!user) {
                 throw new HttpException(400, 'invalid email or password');
             }
+            const HashName = `userOnline-${user._id as string}`;
             const sessionObj = {
                 user: user._id,
             };
@@ -80,11 +84,31 @@ class SessionController extends BaseController {
                 }
             );
 
+            res.cookie('refreshToken', refreshToken, {
+                sameSite: 'strict',
+                httpOnly: true,
+                secure: true,
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+            });
+
+            res.cookie('accessToken', accessToken, {
+                sameSite: 'strict',
+                httpOnly: true,
+                secure: true,
+                maxAge: 900 * 1000,
+            });
+
             await this.userService.updateUser(
                 { _id: user._id },
                 { lastSeenAt: new Date() },
                 { runValidators: true, new: true }
             );
+
+            await this.redisService.createHash({
+                HashName,
+                content: { lastSeen: user.lastSeenAt?.toLocaleString() },
+                expire: 300,
+            });
 
             const friends = user.friends;
 
@@ -97,7 +121,6 @@ class SessionController extends BaseController {
             res.status(200).json({
                 message: 'logged in successfully',
                 accessToken,
-                refreshToken,
             });
         } catch (error) {
             this.handleError(res, error);
@@ -133,6 +156,10 @@ class SessionController extends BaseController {
                 { lastSeenAt: new Date() },
                 { runValidators: true, new: true }
             );
+
+            res.clearCookie('refreshToken');
+
+            res.clearCookie('accessToken');
 
             res.status(200).json({ message: 'logged out' });
         } catch (error) {
@@ -195,8 +222,12 @@ class SessionController extends BaseController {
 
             const activeSession = await this.sessionService.getSession({ user: id, valid: true });
 
-            
-            const refreshToken = get(req, 'headers.x-refresh') as string;
+            const refreshToken = req.cookies['refreshToken'];
+
+            if (!refreshToken || !activeSession) {
+                res.status(401).json({ message: 'Unauthorized', sessionState: false });
+                return;
+            }
 
             const accessToken = await this.sessionService.reIssueAccessToken(refreshToken);
 
@@ -205,11 +236,16 @@ class SessionController extends BaseController {
                 return;
             }
 
-            if (accessToken) {
-                res.setHeader('Authorization', `${accessToken}`);
-            }
+            res.setHeader('Authorization', `${accessToken}`);
 
-            res.status(200).json({ accessToken, refreshToken });
+            res.cookie('accessToken', accessToken, {
+                sameSite:"strict",
+                httpOnly: true,
+                secure: true,
+                maxAge: 900 * 1000,
+            });
+
+            res.status(200).json({ message: 'session state regenerated', sessionState: true });
         } catch (error) {
             this.handleError(res, error);
         }

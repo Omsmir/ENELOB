@@ -46,8 +46,9 @@ const ChatHeader = () => {
         className="!size-16"
         active={isActive(friend._id)}
         titleClassName="!text-sm"
-        children={<LastSeenComponent />}
-      />
+      >
+        <LastSeenComponent />
+      </BadgeAvatar>
     </div>
   );
 };

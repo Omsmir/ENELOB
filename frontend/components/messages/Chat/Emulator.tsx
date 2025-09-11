@@ -9,12 +9,12 @@ import SubmitButton from "../../togglers/SubmitButton";
 import { messageSchema } from "@/lib/vaildation";
 import { DashboardHook } from "../../context/Dashboardprovider";
 import { Mutations } from "@/actions/mutations";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/components/store/slices/AuthReducer";
 
 const Emulator = () => {
-  const { api, contextHolder, isLoading, friend } = DashboardHook();
+  const { api, contextHolder, isLoading, friend} = DashboardHook();
 
-  const { data: session } = useSession();
+  const {  session } = useSession();
 
   const sendMessage = Mutations.useUpdateConversation(api);
 
@@ -30,7 +30,7 @@ const Emulator = () => {
       if (!friend) return null;
       sendMessage.mutate(
         {
-          id: session?.user.id,
+          id: session._id,
           recipientId: friend._id ?? "",
           content: values.content,
         },

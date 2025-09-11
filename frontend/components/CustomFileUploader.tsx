@@ -109,6 +109,7 @@ const PictureUploader: React.FC<CustomFileUploaderProps<File[]>> = ({
       {previewImage && (
         <Image
           wrapperStyle={{ display: "none" }}
+          alt="preview"
           preview={{
             visible: previewOpen,
             onVisibleChange: (visible) => setPreviewOpen(visible),

@@ -8,6 +8,7 @@ import {
   discoverFriendI,
   handleFriendRequestI,
   Login,
+  LoginResponseI,
   logoutProps,
   multipleQueriesI,
   multipleQueriesIResponse,
@@ -18,6 +19,9 @@ import {
   ResponseMessageI,
   sendFriendRequest,
   UpdateProfilePicture,
+  UserAuth,
+  UserQueryI,
+  UserQueryResponseI,
   users,
 } from "@/types";
 import { CancelablePromise } from "../core/CancelablePromise";
@@ -36,11 +40,36 @@ export class Services {
     });
   };
 
+  public static login = ({
+    email,
+    password,
+  }: Login): CancelablePromise<LoginResponseI> => {
+    return request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/login",
+      responseHeader: ["authorization"],
+      body: {
+        email,
+        password,
+      },
+    });
+  };
+
+  public static getUser = ({
+    id,
+  }: UserQueryI): CancelablePromise<UserQueryResponseI> => {
+    return request(OpenAPI, {
+      method: "GET",
+      url: "/api/users/{id}",
+      path: {
+        id,
+      },
+    });
+  };
+
   public static discoverFriends = ({
     id,
     friendName,
-    accessToken,
-    refreshToken,
   }: discoverFriendI): CancelablePromise<users> => {
     return request(OpenAPI, {
       method: "GET",
@@ -49,10 +78,7 @@ export class Services {
       query: {
         friendName,
       },
-      headers: {
-        Authorization: accessToken,
-        "x-refresh": refreshToken,
-      },
+      responseHeader: ["authorization"],
     });
   };
 
@@ -69,6 +95,7 @@ export class Services {
       query: {
         friendId,
       },
+      responseHeader: ["authorization"],
     });
   };
 
@@ -87,6 +114,7 @@ export class Services {
         friendId,
         acception,
       },
+      responseHeader: ["authorization"],
     });
   };
 
@@ -100,6 +128,8 @@ export class Services {
       path: {
         id,
       },
+      responseHeader: ["authorization"],
+
       formData: profileImg,
     });
   };
@@ -121,6 +151,7 @@ export class Services {
         limit,
         cursor,
       },
+      responseHeader: ["authorization"],
     });
   };
 
@@ -138,6 +169,8 @@ export class Services {
       query: {
         recipientId,
       },
+      responseHeader: ["authorization"],
+
       body: {
         content,
       },
@@ -165,6 +198,7 @@ export class Services {
       query: {
         friendId,
       },
+      responseHeader: ["authorization"],
     });
   };
 
@@ -185,41 +219,19 @@ export class Services {
         cursor,
         limit,
       },
+      responseHeader: ["authorization"],
     });
   };
-  public static refreshAccessToken = async ({
+  public static reIssueAccessToken = ({
     id,
-    refreshToken: rf,
-  }: reIssueAccessTokenProps): Promise<ReissuseRefreshTokenResponseI> => {
-    const getResponse = (): CancelablePromise<RefreshTokenResponse> => {
-      return request(OpenAPI, {
-        method: "GET",
-        url: "/api/auth/reIssue/{id}",
-        path: {
-          id,
-        },
-        headers: {
-          "x-refresh": rf,
-        },
-      });
-    };
-
-    const { refreshToken, accessToken, sessionState } = await getResponse();
-
-    if (!accessToken) throw new Error("no access Token");
-
-    const decodedToken = jwt.decode(accessToken) as JwtPayload;
-
-    return {
-      accessToken: accessToken,
-      email: decodedToken?.email,
-      expiresAt: decodedToken?.exp && decodedToken.exp * 1000,
-      id: decodedToken?._id,
-      name: decodedToken?.full_name,
-      profileImg: decodedToken?.profileImg.url,
-      verified: decodedToken?.verified,
-      refreshToken: refreshToken,
-    };
+  }: reIssueAccessTokenProps): CancelablePromise<RefreshTokenResponse> => {
+    return request(OpenAPI, {
+      method: "PUT",
+      url: "/api/auth/reIssue/{id}",
+      path: {
+        id,
+      },
+    });
   };
 }
 
@@ -230,6 +242,9 @@ export const LoginApi = async ({ email, password }: Login) => {
     password,
   });
 
+  await signIn("credentials", {
+    redirect: false,
+  });
   if (!result || result.error) {
     throw new Error(result?.error || "failed");
   }

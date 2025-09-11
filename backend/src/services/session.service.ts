@@ -49,11 +49,21 @@ class SessionService {
 
         if (!user) return false;
 
-        const accessToken = signJwt(
-            { ...user, session: session?._id },
+        const accessToken = await signJwt(
+            {
+                _id: user._id,
+                verified: user.verified,
+                email: user.email,
+                full_name: user.full_name,
+                profileImg: user.profileImg,
+                friends: user.friends,
+                session,
+            },
             'accessTokenPrivateKey',
             'RS256',
-            { expiresIn: parseInt(ACCESSTOKENTTL as string) }
+            {
+                expiresIn: parseInt(ACCESSTOKENTTL as string),
+            }
         );
 
         return accessToken;

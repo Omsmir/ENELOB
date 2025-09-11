@@ -1,5 +1,6 @@
 import SessionController from '@/controllers/session.controller';
 import { routes } from '@/interfaces/routes.interface';
+import DeserializeMiddleware from '@/middlewares/deserializeUser';
 import upload from '@/middlewares/multer';
 import { validate } from '@/middlewares/validateResource';
 import {
@@ -18,7 +19,10 @@ class SessionRoute implements routes {
     public path = '/auth';
     public router = Router();
     // dependency injection: composition over inheritance
+    private deserializerMiddlewares: DeserializeMiddleware;
+
     constructor(private sessionController: SessionController) {
+        this.deserializerMiddlewares = new DeserializeMiddleware();
         this.initializeRoute();
     }
 
@@ -34,14 +38,17 @@ class SessionRoute implements routes {
             validate(generalParamSchema),
             this.sessionController.logoutHandler
         );
+        this.router.use(this.deserializerMiddlewares.checkStatus);
         this.router.put(
             `${this.path}/session`,
+            this.deserializerMiddlewares.requireLogin,
             validate(checkActiveSessionSchema),
             this.sessionController.checkActiveSession
         );
 
-        this.router.get(
+        this.router.put(
             `${this.path}/reIssue/:id`,
+            this.deserializerMiddlewares.requireLogin,
             validate(SessionReissueSchema),
             this.sessionController.reIssueAccessTokenHandler
         );

@@ -1,19 +1,20 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import SingleMessage from "./SingleMessage";
-import { useSession } from "next-auth/react";
 import { ConversationUpatingResponseI } from "@/types";
 import { Queries } from "@/actions/queries";
 import Spinner from "@/components/Spinner";
 import { DashboardHook } from "@/components/context/Dashboardprovider";
 import { groupMessages, socketEventTypes, SocketListener } from "@/lib/utils";
-import { useDispatch } from "react-redux";
-import { addUser } from "@/components/store/slices/usersReducer";
+import { ConversationHook } from "@/components/context/ConversationProvider";
+import { useSession } from "@/components/store/slices/AuthReducer";
+
 
 const MessagesLayout = () => {
   const { socket, friend } = DashboardHook();
+  const {setUnseenMessages} = ConversationHook()
 
-  const { data: session } = useSession();
+  const { session } = useSession();
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const {
@@ -25,8 +26,9 @@ const MessagesLayout = () => {
     fetchPreviousPage,
     hasPreviousPage,
   } = Queries.useGetMessages({
-    id: session?.user.id,
+    id: session._id,
     recipientId: friend?._id as string,
+ 
   });
 
   const [messages, setMessages] = useState<
@@ -37,7 +39,7 @@ const MessagesLayout = () => {
     if (Array.isArray(data?.pages) && data.pages.length > 0) {
       setMessages(data?.pages);
     }
-  }, [isFetching, isFetchingPreviousPage]);
+  }, [isFetching, isFetchingPreviousPage,data?.pages]);
 
   useEffect(() => {
     if (!socket) return;
@@ -56,7 +58,7 @@ const MessagesLayout = () => {
     return () => {
       socket.off("receivePrivateMessage");
     };
-  }, [socket, session?.user.id]);
+  }, [socket, session._id]);
 
   const allMessages = messages?.flatMap((page) => page.messages) ?? [];
 

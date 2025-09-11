@@ -14,9 +14,9 @@ class SocketServer {
     public static io(server: httpServerType) {
         return new Server(server, {
             cors: {
-                origin: ORIGIN,
+                origin: ["http://localhost:3000","http://192.168.1.105:3000"],
                 methods: ['GET', 'POST', 'PUT'],
-                credentials: CREDENTIALS,
+                credentials: true,
             },
         });
     }

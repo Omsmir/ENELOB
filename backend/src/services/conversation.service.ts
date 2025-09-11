@@ -23,6 +23,7 @@ class ConversationService {
         return await this.conversationModel.findOneAndUpdate(query, update, options);
     };
 
+
     public getConversation = async (query: FilterQuery<conversationDocument>) => {
         return await this.conversationModel.findOne(query).lean();
     };
@@ -52,9 +53,8 @@ class ConversationService {
                     cursorIndex + (Number(limit) || 5) + 1
                 );
             } else {
-                const start = Math.max(0, cursorIndex - Number(limit) );
+                const start = Math.max(0, cursorIndex - Number(limit));
 
-                console.log(cursorIndex);
                 messages = messagesExisted.slice(start, cursorIndex);
             }
         } else {

@@ -28,7 +28,7 @@ const LoginForm = () => {
       await LoginIn.mutateAsync(
         { email, password },
         {
-          onSuccess: async (response) => {
+          onSuccess: async () => {
             router.push("/dashboard");
           },
         }
@@ -53,7 +53,7 @@ const LoginForm = () => {
         className="space-y-8 my-auto px-4 sm:p-0 sm:mx-4"
       >
         <div className="flex flex-col justify-center items-center">
-          <h1 className="text-slate-50 bg-amber-800 uppercase text-6xl font-bold rounded-sm p-1" >
+          <h1 className="text-slate-50 bg-amber-800 uppercase text-6xl font-bold rounded-sm p-1">
             {" "}
             ENELOB
           </h1>
@@ -83,25 +83,22 @@ const LoginForm = () => {
             fieldType={FormFieldType.PASSWORD}
             type={state ? "text" : "password"}
             error={form.formState.errors.password}
-            children={
-              <>
-                {state ? (
-                  <Eye
-                    onClick={() => setState(false)}
-                    size="20px"
-                    cursor="pointer"
-                  />
-                ) : (
-                  <EyeOff
-                    onClick={() => setState(true)}
-                    size="20px"
-                    cursor="pointer"
-                  />
-                )}
-              </>
-            }
             name="password"
-          />
+          >
+            {state ? (
+              <Eye
+                onClick={() => setState(false)}
+                size="20px"
+                cursor="pointer"
+              />
+            ) : (
+              <EyeOff
+                onClick={() => setState(true)}
+                size="20px"
+                cursor="pointer"
+              />
+            )}
+          </CustomFormField>
         </div>
         <SubmitButton
           isLoading={isLoading}

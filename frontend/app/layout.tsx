@@ -4,11 +4,7 @@ import QueryProvider from "../components/QueryProvider";
 import { MainLayoutProvider } from "../components/context/LayoutContext";
 import { poppins } from "../fonts/font";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import AuthHolder from "@/components/AuthHolder";
 import { DashboardProvider } from "@/components/context/Dashboardprovider";
-import { getServerSession } from "next-auth";
-import { authOptions } from "./api/auth/[...nextauth]/route";
-import AuthProvider from "@/components/AuthProvider";
 import { PrimeReactProvider } from "primereact/api";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primeicons/primeicons.css";
@@ -24,7 +20,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -36,8 +31,6 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthHolder session={session}>
-            <AuthProvider>
               <PrimeReactProvider>
                 <DashboardProvider>
                   <QueryProvider>
@@ -45,8 +38,6 @@ export default async function RootLayout({
                   </QueryProvider>
                 </DashboardProvider>
               </PrimeReactProvider>
-            </AuthProvider>
-          </AuthHolder>
         </ThemeProvider>
         </ReduxProvider>
       </body>

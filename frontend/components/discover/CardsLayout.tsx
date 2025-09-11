@@ -4,14 +4,9 @@ import "overlayscrollbars/overlayscrollbars.css";
 import React, { useEffect, useState } from "react";
 import SingleCard from "./SingleCard";
 import {
-  ResponseMessageI,
-  User,
-  usersDiscoverd,
   users,
 } from "@/types";
-import Loading from "@/app/loading";
-import { useSession } from "next-auth/react";
-import { Queries } from "@/actions/queries";
+
 import Spinner from "../Spinner";
 
 type CardsLayoutProps = {
@@ -27,7 +22,6 @@ const CardsLayout = ({
   error,
   isError,
 }: CardsLayoutProps) => {
-  const { data: session } = useSession();
 
   const [updatedUsers, setUpdatedUsers] = useState<
     users | undefined
@@ -35,7 +29,7 @@ const CardsLayout = ({
 
   useEffect(() => {
     setUpdatedUsers(users);
-  }, [isFetching]);
+  }, [isFetching,users]);
 
   console.log(users)
     return (

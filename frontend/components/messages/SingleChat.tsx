@@ -43,8 +43,9 @@ const SingleChat = ({ friend }: SingleChatProps) => {
           className="!size-24"
           active={isActive(friend._id)}
           titleClassName=""
-          children={<ActiveToggleComponent />}
-        />
+        >
+          <ActiveToggleComponent />
+        </BadgeAvatar>
 
         <div className="flex flex-col items-start justify-center p-4">
           <h1 className="font-medium lowercase text-slate-400 text-sm">

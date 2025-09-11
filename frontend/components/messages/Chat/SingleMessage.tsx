@@ -1,8 +1,8 @@
 "use client";
 import { DashboardHook } from "@/components/context/Dashboardprovider";
+import { useSession } from "@/components/store/slices/AuthReducer";
 import { Message } from "@/types";
 import { format } from "date-fns";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import React from "react";
 
@@ -43,15 +43,15 @@ const SingleMessage = ({
     messages: Message[];
   };
 }) => {
-  const { data: session } = useSession();
+  const { session } = useSession();
   const {friend} = DashboardHook()
 
-  if (group.userId === session?.user.id) {
+  if (group.userId === session._id) {
     return (
       <div className={`flex flex-row-reverse justify-start p-4 `}>
         <div className="size-16 overflow-hidden rounded-full ">
           <Image
-            src={session.user.image ||"/assets/images/dr-green.png"}
+            src={session.profileImg||"/assets/images/dr-green.png"}
             width={1000}
             height={1000}
             alt="logo"
@@ -59,7 +59,7 @@ const SingleMessage = ({
           />
         </div>
         <MessageComponent
-          displayName={session?.user.name || ""}
+          displayName={session.full_name || ""}
           sentAt={group.sentAt}
         >
           {group.messages.map((message, index) => (

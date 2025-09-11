@@ -120,54 +120,53 @@
     @apply bg-background text-foreground;
   }
 
- 
-   .remove-scrollbar::-webkit-scrollbar {
-        width: 0px;
-        height: 0px;
-        border-radius: 0px;
-    }
+  .shad-1 {
+    @apply text-black bg-slate-50 dark:bg-slate-50 dark:text-black dark:hover:bg-slate-100 dark:hover:text-black;
+  }
 
-    .remove-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-    }
+  .shad-select-custom {
+    @apply flex justify-center items-center w-full bg-slate-100 rounded-md border ml-1 max-h-[38px];
+  }
+  .remove-scrollbar::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    border-radius: 0px;
+  }
 
-    .remove-scrollbar::-webkit-scrollbar-thumb {
-        background: transparent;
-        border-radius: 0px;
-    }
+  .remove-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-    .remove-scrollbar::-webkit-scrollbar-thumb:hover {
-        /* background: #1e2238; */
-        background: transparent;
-    }
-    .container {
-        @apply relative flex-1 overflow-y-auto px-[5%];
-    }
+  .remove-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 0px;
+  }
 
-    .sub-container {
-        @apply mx-auto flex size-full flex-col py-10;
-    }
+  .remove-scrollbar::-webkit-scrollbar-thumb:hover {
+    /* background: #1e2238; */
+    background: transparent;
+  }
+  .container {
+    @apply relative flex-1 overflow-y-auto px-[5%];
+  }
 
-    .side-img {
-        @apply hidden h-full object-cover md:block;
-    }
-   
+  .sub-container {
+    @apply mx-auto flex size-full flex-col py-10;
+  }
 
-   
-
+  .side-img {
+    @apply hidden h-full object-cover md:block;
+  }
 }
-   .shad-input {
-      border: none !important;
-      outline: none;
-      box-shadow: none !important;
-   }
+.shad-input {
+  border: none !important;
+  outline: none;
+  box-shadow: none !important;
+}
 @layer utilities {
   .text-muted-foreground {
     color: var(--muted-foreground);
   }
-  
-  
-
 }
 
 .shiki {
@@ -181,28 +180,25 @@ pre.shiki {
   background: transparent !important;
 }
 
-
-
 .dark .ant-result-title,
 .dark .ant-result-subtitle {
-    color: #ffff !important;
+  color: #ffff !important;
 }
 .ant-upload-list .ant-upload-select {
-    width: 125px !important;
-    height: 125px !important;
+  width: 125px !important;
+  height: 125px !important;
 }
 .ant-upload-list-item-container {
-    width: 125px !important;
-    height: 125px !important;
+  width: 125px !important;
+  height: 125px !important;
 }
 .ant-upload-list-item-container {
-    width: 100% !important;
+  width: 100% !important;
 }
 .ant-upload-list-text .ant-upload-list-item-container {
-    height: 55px !important
+  height: 55px !important
   ;
 }
-
 
 .p-inputtext {
   background: transparent !important;
@@ -211,7 +207,6 @@ pre.shiki {
   cursor: pointer;
   overflow: hidden;
   padding: 0;
-
 }
 .p-inputtext:focus {
   outline: none !important;
@@ -219,7 +214,7 @@ pre.shiki {
 }
 
 .p-datepicker-trigger {
-  background-color: transparent ;
+  background-color: transparent;
   color: gray;
   border: none;
 }

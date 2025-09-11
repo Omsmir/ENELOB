@@ -1,9 +1,9 @@
 "use client";
 import { Mutations } from "@/actions/mutations";
 import { DashboardHook } from "@/components/context/Dashboardprovider";
+import { useSession } from "@/components/store/slices/AuthReducer";
 import { Button } from "@/components/ui/button";
 import { multipleQueriesIResponse, User } from "@/types";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import React, { useState } from "react";
 
@@ -18,7 +18,7 @@ const SingleFriendRequest = ({
   user,
   setUpdatedUsers,
 }: SingleFriendRequestProps) => {
-  const { data: session } = useSession();
+  const { session } = useSession();
   const { api } = DashboardHook();
   const [message, setMessage] = useState<string | null>("");
   const handleFriendRequestMutation = Mutations.useHandleFriendRequest(api);
@@ -39,7 +39,7 @@ const SingleFriendRequest = ({
                 ...us,
                 sendRequests: [
                   ...us.sendRequests.filter(
-                    (request) => request !== session?.user.id
+                    (request) => request !== session._id
                   ),
                 ],
               }
@@ -50,9 +50,9 @@ const SingleFriendRequest = ({
 
     await handleFriendRequestMutation.mutateAsync(
       {
-        id: session?.user.id,
+        id: session._id,
         friendId,
-        acception,
+        acception
       },
       {
         onSuccess: (response) => {
@@ -78,10 +78,10 @@ const SingleFriendRequest = ({
           <p className="text-sm text-slate-500">wants to be your friend</p>
         </div>
       </div>
-      {user.sendRequests.filter((request) => request === session?.user.id)
+      {user.sendRequests.filter((request) => request === session._id)
         .length > 0 ? (
         user.sendRequests
-          .filter((request) => request === session?.user.id)
+          .filter((request) => request === session._id)
           .map((_, index) => (
             <div
               key={index}

@@ -29,7 +29,7 @@ class UserService {
     };
 
     public findUser = async (query: FilterQuery<UserDocument>) => {
-        return await this.userModel.findOne(query).lean();
+        return await this.userModel.findOne(query)
     };
     public getAllUsers = async (query?: FilterQuery<UserDocument>, limit?: number) => {
         return await this.userModel.find(query ? query : {}).limit(limit || 10);
@@ -59,6 +59,8 @@ class UserService {
             nextCursor = users[Number(limit) - 1]._id as string; // Use the last item's _id as the nextCursor
             users.pop();
         }
+
+        
 
         return { users, nextCursor };
     };

@@ -8,18 +8,20 @@ import { DashboardHook } from "@/components/context/Dashboardprovider";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomFormField, { FormFieldType } from "@/components/CustomFormField";
-import { useSession } from "next-auth/react";
 import CustomFileUploader, { FileUploaderType } from "../CustomFileUploader";
 import CustomSkeleton, { SkeletonType } from "../CustomSkeleton";
 import { Mutations } from "@/actions/mutations";
+import { useSession } from "../store/slices/AuthReducer";
+import { useRouter } from "next/navigation";
 
 const ProfilePicture = () => {
   const { api, isLoading } = DashboardHook();
   const [loading, setLoading] = useState(true);
 
-  const { data: session, update } = useSession();
+  const { session } = useSession();
 
   const changePicture = Mutations.useUpdateProfilePicture(api);
+  const updateSession = Mutations.useReissueAccessToken(api);
 
   const form = useForm<z.infer<typeof profilePictureSchema>>({
     resolver: zodResolver(profilePictureSchema),
@@ -40,11 +42,14 @@ const ProfilePicture = () => {
     });
     try {
       changePicture.mutate(
-        { id: session?.user.id, profileImg: formData },
+        { id: session._id, profileImg: formData },
         {
           onSuccess: async () => {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            await update();
+            updateSession.mutateAsync({ id: session._id });
+
+            setTimeout(() => {
+              form.reset();
+            }, 1000);
           },
         }
       );
@@ -76,7 +81,7 @@ const ProfilePicture = () => {
               size={125}
               width={125}
               height={125}
-              src={session?.user.image || "/assets/images/dr-cruz.png"}
+              src={session.profileImg || "/assets/images/dr-cruz.png"}
             />
           </div>
 

@@ -24,19 +24,17 @@ const RegisterForm = () => {
 
   const register = Mutations.UseRegister(api);
   const onSubmit = async (values: Zod.infer<typeof RegisterSchema>) => {
-
     const data = {
       email: values.email,
       password: values.password,
       passwordConfirm: values.passwordConfirm,
       full_name: values.full_name,
-      gender:values.gender,
-      birthDate:values.birthDate
+      gender: values.gender,
+      birthDate: values.birthDate,
     };
 
-   
     try {
-      console.log(data)
+      console.log(data);
       await register.mutateAsync(data);
     } catch (error: any) {
       console.log(error.message);
@@ -99,25 +97,18 @@ const RegisterForm = () => {
           fieldType={FormFieldType.PASSWORD}
           type={state ? "text" : "password"}
           error={form.formState.errors.password}
-          children={
-            <>
-              {state ? (
-                <Eye
-                  onClick={() => setState(false)}
-                  size="20px"
-                  cursor="pointer"
-                />
-              ) : (
-                <EyeOff
-                  onClick={() => setState(true)}
-                  size="20px"
-                  cursor="pointer"
-                />
-              )}
-            </>
-          }
           name="password"
-        />
+        >
+          {state ? (
+            <Eye onClick={() => setState(false)} size="20px" cursor="pointer" />
+          ) : (
+            <EyeOff
+              onClick={() => setState(true)}
+              size="20px"
+              cursor="pointer"
+            />
+          )}
+        </CustomFormField>
 
         <CustomFormField
           control={form.control}
@@ -127,39 +118,32 @@ const RegisterForm = () => {
           fieldType={FormFieldType.PASSWORD}
           type={state ? "text" : "password"}
           error={form.formState.errors.passwordConfirm}
-          children={
-            <>
-              {state ? (
-                <Eye
-                  onClick={() => setState(false)}
-                  size="20px"
-                  cursor="pointer"
-                />
-              ) : (
-                <EyeOff
-                  onClick={() => setState(true)}
-                  size="20px"
-                  cursor="pointer"
-                />
-              )}
-            </>
-          }
           name="passwordConfirm"
-        />
-        <div className="flex items-start">
+        >
+          {state ? (
+            <Eye onClick={() => setState(false)} size="20px" cursor="pointer" />
+          ) : (
+            <EyeOff
+              onClick={() => setState(true)}
+              size="20px"
+              cursor="pointer"
+            />
+          )}
+        </CustomFormField>
+        <div className="flex items-start gap-1">
           <CustomFormField
             fieldType={FormFieldType.SELECT}
             control={form.control}
             label="Gender"
             name="gender"
             placeholder="select a gender"
-            className="max-h-[250px]"
+            className="max-h-[250px] "
           >
             {genders.map((value, index) => (
               <SelectItem
                 key={index}
                 value={value}
-                className="cursor-pointer transition-colors hover:bg-slate-200 "
+                className="cursor-pointer transition-colors dark:hover:bg-slate-100"
               >
                 <div className="flex justify-center items-center">
                   <p className="text-md text-black mx-2">{value}</p>
@@ -172,7 +156,6 @@ const RegisterForm = () => {
             fieldType={FormFieldType.DATE}
             label="Birthday"
             name="birthDate"
-            className="ml-1"
           />
         </div>
 

@@ -2,9 +2,8 @@ import { config } from 'dotenv';
 
 config({ path: `.env.${process.env.NODE_ENV || 'development'}.local` });
 
-
-export const CREDENTIALS = true
-export const PROJECT_NAME = 'ENELOB'
+export const CREDENTIALS = true;
+export const PROJECT_NAME = 'ENELOB';
 export const {
     NODE_ENV,
     PORT,
@@ -28,8 +27,9 @@ export const {
     FIREBASE_MESSAGING_SENDER_ID,
     FIREBASE_APP_ID,
     FIREBASE_MESURMENTID,
-    FRONTEND_URI
-
+    FRONTEND_URI,
+    REDIS_PWD,
+    REDIS_DEV_URI,
 } = process.env;
 
 export default {

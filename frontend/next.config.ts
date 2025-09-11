@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 const isProd = process.env.NODE_ENV === "production";
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*", // requests to /api/*
+        destination: "http://localhost:8090/api/:path*", // proxy to backend
+      },
+    ];
+  },
   /* config options here */
   experimental: {
     serverActions: {
@@ -32,8 +40,8 @@ const nextConfig: NextConfig = {
   },
   env: {
     NEXT_PUBLIC_API_URL: isProd
-      ? "http://backend:8090"
-      : "http://localhost:8090",
+      ? "https://localhost"
+      : "https://localhost",
   },
 };
 

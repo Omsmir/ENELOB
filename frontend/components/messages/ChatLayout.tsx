@@ -5,13 +5,13 @@ import { MotionComponent, Motions } from "../relatedComponents/Motion";
 import MessageHeader from "./MessageHeader";
 import Spinner from "../Spinner";
 import { Button } from "../ui/button";
-import { useSession } from "next-auth/react";
 import { Queries } from "@/actions/queries";
 import { multipleQueriesIResponse } from "@/types";
 import SingleChat from "./SingleChat";
+import { useSession } from "../store/slices/AuthReducer";
 
 const ChatLayout = () => {
-  const { data: session } = useSession();
+  const {  session } = useSession();
   const {
     data,
     isFetching,
@@ -21,7 +21,7 @@ const ChatLayout = () => {
     hasNextPage,
     fetchNextPage,
   } = Queries.useMultipleQueries({
-    id: session?.user.id,
+    id: session._id,
     query: "friends",
     limit: 5,
   });
@@ -32,7 +32,7 @@ const ChatLayout = () => {
 
   useEffect(() => {
     setUpdatedFriends(data?.pages);
-  }, [isFetching, isFetchingNextPage]);
+  }, [isFetching, isFetchingNextPage,data?.pages]);
 
   const handleNextPage = () => {
     if (hasNextPage) {

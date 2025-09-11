@@ -10,12 +10,14 @@ import {
   ObjectType,
   tone,
   User,
+  UserAuth,
 } from "@/types";
 import { GetProp, UploadProps } from "antd";
 import { notificationSounds } from "./constants";
 import * as Tone from "tone";
 import { Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -183,3 +185,4 @@ export const SocketListener = ({
       return null;
   }
 };
+

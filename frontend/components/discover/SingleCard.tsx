@@ -4,27 +4,21 @@ import React, { Fragment } from "react";
 import { Button } from "../ui/button";
 import { UserAddOutlined, UserDeleteOutlined } from "@ant-design/icons";
 import { User, usersDiscoverd, users } from "@/types";
-import { Queries } from "@/actions/queries";
-import { useSession } from "next-auth/react";
 import { Mutations } from "@/actions/mutations";
 import { DashboardHook } from "../context/Dashboardprovider";
+import { useSession } from "../store/slices/AuthReducer";
 
 interface SingleCardProps {
   user: usersDiscoverd;
   setUpdatedUsers: React.Dispatch<React.SetStateAction<users | undefined>>;
 }
 const SingleCard = ({ user, setUpdatedUsers }: SingleCardProps) => {
-  const { data: session } = useSession();
+  const { session } = useSession();
   const { api } = DashboardHook();
 
   const addFriend = Mutations.useSendFriendRequest(api);
 
-  const payload = {
-    id: session?.user.id,
-    accessToken: session?.user.accessToken,
-    refreshToken: session?.user.refreshToken,
-  };
-
+  
   const handleFriendAddition = async ({
     friendId,
     state,
@@ -32,14 +26,14 @@ const SingleCard = ({ user, setUpdatedUsers }: SingleCardProps) => {
     friendId: string;
     state: "add" | "remove";
   }) => {
-    await addFriend.mutateAsync({ ...payload, friendId });
+    await addFriend.mutateAsync({ id:session._id, friendId });
 
     switch (state) {
       case "add":
         return setUpdatedUsers((prev) =>
           prev?.map((user) =>
             user.user._id === friendId
-              ? { ...user, sendRequestId: session?.user.id }
+              ? { ...user, sendRequestId: session._id }
               : user
           )
         );
@@ -71,7 +65,7 @@ const SingleCard = ({ user, setUpdatedUsers }: SingleCardProps) => {
       </div>
 
       <div className="flex p-4">
-        {user.userId === session?.user.id ? (
+        {user.userId === session._id ? (
           <div className="flex flex-col w-full ">
             <p className="text-slate-500 dark:text-slate-50 text-sm capitalize mb-2">
               you're friends
@@ -85,7 +79,7 @@ const SingleCard = ({ user, setUpdatedUsers }: SingleCardProps) => {
           </div>
         ) : (
           <Fragment>
-            {session?.user.id === user.sendRequestId ? (
+            {session._id === user.sendRequestId ? (
               <Button
                 className="bg-red-500 transition-colors hover:bg-red-700 w-1/4 cursor-pointer"
                 type="button"

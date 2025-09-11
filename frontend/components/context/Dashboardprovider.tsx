@@ -14,13 +14,13 @@ import { NotificationInstance } from "antd/es/notification/interface";
 
 import { io, Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
-import { useSession } from "next-auth/react";
 import { User } from "@/types";
 import { socketEventTypes, SocketListener } from "@/lib/utils";
 import { addUser, removeUser } from "../store/slices/usersReducer";
 import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "next-themes";
 import { RootState } from "../store/store";
+import { useSession } from "../store/slices/AuthReducer";
 
 interface DashboardContextProps {
   api: NotificationInstance;
@@ -36,7 +36,8 @@ interface DashboardContextProps {
   friend: User | undefined;
   theme: string | undefined;
   setTheme: Dispatch<SetStateAction<string>>;
-  isActive: (id: string) => boolean
+  isActive: (id: string) => boolean;
+
 }
 
 const DashboardContext = createContext<DashboardContextProps | null>(null);
@@ -46,12 +47,12 @@ export const DashboardProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
   const [api, contextHolder] = notification.useNotification();
   const [state, setState] = useState<boolean>(false);
 
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -60,13 +61,12 @@ export const DashboardProvider = ({
   const [friend, setFriend] = useState<User | undefined>(undefined);
   const { theme, setTheme } = useTheme();
   const { onlineUsers } = useSelector((state: RootState) => state.users);
-
+ 
   const isActive = (id: string): boolean => {
     const filiteredActiveUser = onlineUsers.filter((user) => user === id);
 
     return filiteredActiveUser && filiteredActiveUser.length > 0;
   };
-
 
   const handleAddUserOnline = (id: string) => {
     dispatch(addUser(id));
@@ -78,13 +78,13 @@ export const DashboardProvider = ({
   };
   // 👇 initialize socket only when session is ready
   useEffect(() => {
-    const token = session?.user.accessToken;
+    const token = session.accessToken;
     if (!token) return;
 
     if (!socketRef.current) {
       socketRef.current = io("http://localhost:8090", {
         auth: { token },
-
+        withCredentials:true,
         autoConnect: true,
         reconnection: true,
       });
@@ -119,7 +119,7 @@ export const DashboardProvider = ({
       socketRef.current = null;
       setSocket(null);
     };
-  }, [session?.user.accessToken]);
+  }, [session.accessToken]);
   // Tables
 
   return (
@@ -139,6 +139,7 @@ export const DashboardProvider = ({
         theme,
         setTheme,
         isActive
+      
       }}
     >
       {children}

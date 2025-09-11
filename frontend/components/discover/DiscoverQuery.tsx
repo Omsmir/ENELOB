@@ -5,14 +5,11 @@ import { z } from "zod";
 import { Form } from "@/components/ui/form";
 import CustomFormField from "@/components/CustomFormField";
 import { FormFieldType } from "@/components/CustomFormField";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import SubmitButton from "../togglers/SubmitButton";
 import { discoverSchema } from "@/lib/vaildation";
-import Link from "next/link";
 import { DashboardHook } from "../context/Dashboardprovider";
-import { useSession } from "next-auth/react";
 import { Input } from "../ui/input";
-import { Services } from "@/actions/sdk.gen";
 import { User } from "@/types";
 import { useDebounce } from "../Debounce";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
@@ -20,6 +17,7 @@ import CardsLayout from "./CardsLayout";
 import { Queries } from "@/actions/queries";
 import { genders } from "@/lib/constants";
 import { SelectItem } from "../ui/select";
+import { useSession } from "../store/slices/AuthReducer";
 
 const DiscoverQuery = () => {
   const [value, setValue] = useState<string>("");
@@ -29,11 +27,12 @@ const DiscoverQuery = () => {
   const [isActive, setIsActive] = useState<"general" | "filtered">("general");
 
   const { api, contextHolder, isLoading } = DashboardHook();
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const { data,isFetching,error,isError } = Queries.UseDiscoverFriends({
-    id: session?.user.id,
-    friendName: debouncedValue,
+    id: session._id,
+    friendName: debouncedValue
+    
   });
 
   const onSubmit = async (values: z.infer<typeof discoverSchema>) => {
@@ -120,7 +119,7 @@ const DiscoverQuery = () => {
                             <SelectItem
                                 key={index}
                                 value={value}
-                                className="cursor-pointer transition-colors hover:bg-slate-200 "
+                                className="cursor-pointer transition-colors dark:hover:bg-slate-200 dark:hover:text-black dark:focus:bg-slate-200"
                             >
                                 <div className="flex justify-center items-center">
                                     <p className="text-md">{value}</p>

@@ -18,6 +18,7 @@ import { developedBy, OOP, SIGNALS } from './utils/constants';
 import { gracefulShutdown } from './utils/gracefulEvents';
 import SocketServer from './utils/socketServer';
 import { Server } from 'socket.io';
+import { RedisConnection } from './utils/redis';
 
 class App {
     public PORT: string | number;
@@ -26,19 +27,23 @@ class App {
     public server: http.Server;
     public mongoConnection: MongoConnection;
     public static initiator: Server;
+    public redisConnection: RedisConnection;
+    private deserializerMiddlewares: DeserializeMiddleware;
     constructor(routes: routes[]) {
         this.PORT = PORT || 8090;
         this.env = NODE_ENV || 'development';
         this.app = express();
         this.server = http.createServer(this.app);
+        this.deserializerMiddlewares = new DeserializeMiddleware();
         this.mongoConnection = MongoConnection.getInstance();
+        this.redisConnection = RedisConnection.getInstance();
         App.initiator = SocketServer.io(this.server);
 
         this.socketInitialize();
 
         this.initializeMiddlewares();
-        this.initializeRoutes(routes);
         this.initializeDeserializers();
+        this.initializeRoutes(routes);
         this.initializeErrorMiddlewares();
         this.setupGracefulShutdown();
     }
@@ -54,7 +59,7 @@ class App {
     }
 
     private async socketInitialize() {
-         SocketServer.SocketInitiator(App.initiator);
+        SocketServer.SocketInitiator(App.initiator);
     }
 
     private initializeRoutes(routes: routes[]) {
@@ -65,7 +70,13 @@ class App {
 
     private async initializeMiddlewares() {
         this.app.use(morgan(LOG_FORMAT || 'dev', { stream }));
-        this.app.use(cors({ origin: ORIGIN, credentials: true }));
+        this.app.use(
+            cors({
+                origin: 'http://localhost:3000',
+                credentials: true,
+                exposedHeaders: ['Authorization'],
+            })
+        );
         this.app.use(hpp({ checkBody: true }));
         this.app.use(helmet());
         this.app.use(compression());
@@ -76,7 +87,7 @@ class App {
     }
 
     private async initializeDeserializers() {
-        this.app.use(DeserializeMiddleware.deserializeUser);
+        this.app.use(this.deserializerMiddlewares.deserializeUser);
     }
     private initializeErrorMiddlewares() {
         this.app.use(ErrorHandler);
@@ -86,7 +97,6 @@ class App {
         return new App(routes);
     }
 
-  
     public getServer() {
         // specfic for testing
         return this.app;

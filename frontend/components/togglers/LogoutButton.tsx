@@ -1,9 +1,9 @@
 "use client";
 import { Button } from "../ui/button";
 import Swal from "sweetalert2";
-import { signOut, useSession } from "next-auth/react";
 import { DashboardHook } from "../context/Dashboardprovider";
 import { Mutations } from "@/actions/mutations";
+import { useSession } from "../store/slices/AuthReducer";
 
 interface LogoutButtonProps {
   className?: string;
@@ -11,7 +11,7 @@ interface LogoutButtonProps {
 
 const LogoutButton = ({ className }: LogoutButtonProps) => {
   const { setTheme, api } = DashboardHook();
-  const { data: session } = useSession();
+  const { session } = useSession();
   const logout = Mutations.useLogout(api);
 
   const handelLogOut = async () => {
@@ -29,7 +29,7 @@ const LogoutButton = ({ className }: LogoutButtonProps) => {
         } else if (result.isConfirmed) {
           Swal.fire("Logged out", "", "success");
 
-          await logout.mutateAsync({ id: session?.user.id });
+          await logout.mutateAsync({ id: session._id});
 
           setTheme("light");
         }
