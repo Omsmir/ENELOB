@@ -19,12 +19,24 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     env:
       NODE_ENV: test
-      MONGO_DB: chat
+      MONGO_DB: oop
       MONGO_DB_URI: "mongodb://localhost:27017/"
       MONGO_DB_USER: ""
       MONGO_DB_PASSWD: ""
+      REDIS_HOST: "localhost"
+      REDIS_PORT: 6379
 
     steps:
       - name: Checkout code
@@ -48,4 +60,4 @@ jobs:
         run: |
           node dist/src/server.js &
           sleep 10
-          echo "✅ Backend server started and connected to local MongoDB"
+          echo "✅ Backend server started and connected to MongoDB + Redis"
