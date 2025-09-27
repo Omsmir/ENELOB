@@ -1,4 +1,4 @@
-name: Build With SWC
+name: Build Backend with SWC
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
 
     env:
       NODE_ENV: test
-      MONGO_DB: oop
+      MONGO_DB: chat
       MONGO_DB_URI: "mongodb://localhost:27017/"
       MONGO_DB_USER: ""
       MONGO_DB_PASSWD: ""
@@ -36,13 +36,16 @@ jobs:
           node-version: 20
 
       - name: Install Dependencies
+        working-directory: ./backend
         run: npm ci
-        
-      - name: Build Project
+
+      - name: Build Project (SWC)
+        working-directory: ./backend
         run: npm run build
 
       - name: Start & Test App
+        working-directory: ./backend
         run: |
           node dist/src/server.js &
           sleep 10
-          echo "Server started and connected to local MongoDB"
+          echo "✅ Backend server started and connected to local MongoDB"
