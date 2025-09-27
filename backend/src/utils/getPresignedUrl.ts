@@ -7,7 +7,7 @@ export const uploadImageToFirebase = async ({
     path,
     userId,
 }: {
-    image: Express.Multer.File;
+    image: {buffer: Buffer; originalname: string; mimetype: string} | undefined;
     path: string;
     userId: string | undefined;
 }) => {
@@ -24,6 +24,8 @@ export const uploadImageToFirebase = async ({
         const snapshot = await uploadBytes(Storage, image.buffer, { contentType: image.mimetype });
 
         const downloadUrl = await getDownloadURL(snapshot.ref);
+
+        logger.info(`File uploaded successfully to path: ${Storage.fullPath}`);
 
         return {
             filename: image.originalname,

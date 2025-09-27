@@ -56,6 +56,7 @@ class SessionController extends BaseController {
                     email: user.email,
                     full_name: user.full_name,
                     profileImg: user.profileImg,
+                    coverImg: user.coverImg,
                     friends: user.friends,
                     session,
                 },
@@ -133,6 +134,12 @@ class SessionController extends BaseController {
     ) => {
         try {
             const id = req.params.id;
+            const userId = res.locals.user._id as string;
+            const io = App.initiator;
+
+            if (id !== userId) {
+                throw new HttpException(401, 'unauthorized operation');
+            }
 
             const user = await this.userService.findUser({ _id: id });
 
@@ -144,6 +151,18 @@ class SessionController extends BaseController {
             if (!session) {
                 throw new HttpException(400, 'there is no active session');
             }
+
+            const friends = user.friends;
+
+            if (friends && friends.length > 0) {
+                for (const friend of friends) {
+                    io.to(`${friend}`).emit('userOffline', { id: user._id });
+                }
+            }
+
+            const HashName = `user:${user._id}`;
+
+            await this.redisService.DelHash(`${HashName}:online-status`,'status');
 
             await this.sessionService.updateSession(
                 { user: id, valid: true },
@@ -200,7 +219,6 @@ class SessionController extends BaseController {
                 return;
             }
 
-            emitEvent('userOnline');
             res.status(200).json({ message: 'session got reactivated' });
         } catch (error) {
             this.handleError(res, error);
@@ -213,6 +231,11 @@ class SessionController extends BaseController {
     ) => {
         try {
             const id = req.params.id;
+            const userId = res.locals.user._id as string;
+
+            if (id !== userId) {
+                throw new HttpException(401, 'unauthorized operation');
+            }
 
             const user = await this.userService.findUser({ _id: id });
 
@@ -239,7 +262,7 @@ class SessionController extends BaseController {
             res.setHeader('Authorization', `${accessToken}`);
 
             res.cookie('accessToken', accessToken, {
-                sameSite:"strict",
+                sameSite: 'strict',
                 httpOnly: true,
                 secure: true,
                 maxAge: 900 * 1000,

@@ -20,8 +20,11 @@ export class RedisConnection {
     private static instance: RedisConnection;
     private redisClient: RedisClientType;
 
-     constructor() {
-        this.redisClient = createClient({ url: REDIS_DEV_URI, password: REDIS_PWD });
+    constructor() {
+        this.redisClient = createClient({
+            url: REDIS_DEV_URI,
+            password: REDIS_PWD,
+        });
         this.initializeConnection();
     }
 
@@ -36,7 +39,7 @@ export class RedisConnection {
         try {
             this.redisClient.on('connect', () => logger.info('Redis is connected'));
 
-            this.redisClient.on('error', err => logger.error('error connecting to redis', err));
+            this.redisClient.on('error', (err) => logger.error('error connecting to redis', err));
             await this.redisClient.connect();
         } catch (error) {
             logger.error('Error connecting to Redis:', error);

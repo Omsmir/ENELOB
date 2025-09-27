@@ -11,7 +11,8 @@ import SingleChat from "./SingleChat";
 import { useSession } from "../store/slices/AuthReducer";
 
 const ChatLayout = () => {
-  const {  session } = useSession();
+  const { session } = useSession();
+
   const {
     data,
     isFetching,
@@ -28,11 +29,13 @@ const ChatLayout = () => {
 
   const [updatedFriends, setUpdatedFriends] = useState<
     multipleQueriesIResponse[] | undefined
-  >(data?.pages);
+  >();
 
   useEffect(() => {
     setUpdatedFriends(data?.pages);
-  }, [isFetching, isFetchingNextPage,data?.pages]);
+
+
+  }, [isFetching, isFetchingNextPage, data?.pages]);
 
   const handleNextPage = () => {
     if (hasNextPage) {
@@ -55,10 +58,7 @@ const ChatLayout = () => {
           updatedFriends.length > 0 &&
           updatedFriends.map((page) =>
             page.users.map((friend, index) => (
-              <SingleChat
-                friend={friend}
-                key={index}
-              />
+              <SingleChat friend={friend} key={index} />
             ))
           )
         )}

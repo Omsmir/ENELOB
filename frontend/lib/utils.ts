@@ -7,17 +7,14 @@ import {
   theme as CurrTheme,
   GroupMessageResponse,
   Message,
-  ObjectType,
   tone,
-  User,
-  UserAuth,
 } from "@/types";
 import { GetProp, UploadProps } from "antd";
 import { notificationSounds } from "./constants";
 import * as Tone from "tone";
 import { Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { differenceInMinutes } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -61,22 +58,35 @@ export const groupMessages = (
   //   (a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
   // );
 
-  const groups: { userId: string; sentAt: Date; messages: typeof messages }[] =
-    [];
+  const groups: {
+    index: string;
+    userId: string;
+    sentAt: Date;
+    messages: typeof messages;
+  }[] = [];
 
   let currentGroup = null;
 
   for (const msg of messages) {
     if (!msg) return [];
-    if (!currentGroup || currentGroup.userId !== msg.userId) {
+    if (
+      !currentGroup ||
+      currentGroup.userId !== msg.userId ||
+      differenceInMinutes(msg.sentAt, currentGroup.sentAt) >= 1
+    ) {
       // start a new group
       currentGroup = {
+        index: msg._id,
         userId: msg.userId,
         sentAt: msg.sentAt,
         messages: [msg],
       };
+
       groups.push(currentGroup);
     } else {
+      if (differenceInMinutes(msg.sentAt, currentGroup.sentAt) > 1) {
+        currentGroup.sentAt = msg.sentAt;
+      }
       // push into existing group
       currentGroup.messages.push(msg);
     }
@@ -85,8 +95,10 @@ export const groupMessages = (
   return groups.sort().reverse();
 };
 
-export const playSound = (tone: string) => {
-  const notificationTone = notificationSounds("message");
+export const playSound = (
+  tone: "message-send" | "message-receive" | "message-notification"
+) => {
+  const notificationTone = notificationSounds(tone);
   const player = new Tone.Player(`${notificationTone}`).toDestination();
   player.autostart = true;
 };
@@ -95,6 +107,8 @@ export enum socketEventTypes {
   RECEIVE_NEW_MESSAGE = "receivePrivateMessage",
   ONLINE_USERS = "userOnline",
   OFFLINE_USERS = "userOffline",
+  MARK_AS_SEEN = "markAsSeen",
+  IMAGE_UPDATED = "ImageUpdated",
 }
 
 type SocketListenerProps = {
@@ -103,27 +117,28 @@ type SocketListenerProps = {
     value: React.SetStateAction<ConversationUpatingResponseI[] | undefined>
   ) => void;
   setUser?: (id: string) => void;
-  tone: tone;
   socketEvent?: string;
   eventValue: socketEventTypes;
   container?: React.RefObject<HTMLDivElement | null>;
+  conversationId?: string | undefined;
+  userId?: string;
 };
 
 export const SocketListener = ({
   socket,
   setMessages,
-  tone,
   socketEvent,
   eventValue,
   setUser,
   container,
+  conversationId,
+  userId,
 }: SocketListenerProps) => {
   if (!socket) return;
 
   switch (eventValue) {
     case socketEventTypes.RECEIVE_NEW_MESSAGE:
       const handleNewMessage = (data: { message: Message }) => {
-        console.log("new message");
         if (setMessages) {
           setMessages((prev) => {
             if (!prev || prev.length === 0) {
@@ -146,10 +161,23 @@ export const SocketListener = ({
               messages: [...updated[updated.length - 1].messages, data.message],
             };
 
+            if (conversationId && conversationId === data.message.userId) {
+              // conversation is opened
+              console.log("same conversation");
+              if (setUser) {
+                setUser(data.message.userId);
+              }
+            }
             return updated;
           });
         }
-        playSound(tone);
+        if (data.message.userId === userId) {
+          playSound("message-send");
+        } else if (data.message.userId === conversationId) {
+          playSound("message-receive");
+        } else {
+          playSound("message-notification");
+        }
 
         if (!container?.current) return;
 
@@ -158,7 +186,7 @@ export const SocketListener = ({
 
       socket.on(
         `${socketEventTypes.RECEIVE_NEW_MESSAGE}`,
-        (data: { message: Message }) => {
+        (data: { message: Message; recipientId: string }) => {
           handleNewMessage(data);
         }
       );
@@ -181,8 +209,62 @@ export const SocketListener = ({
         }
       });
       break;
+
+    case socketEventTypes.MARK_AS_SEEN:
+      socket.on(
+        `${socketEventTypes.MARK_AS_SEEN}`,
+        (data: { recipientId: string }) => {
+          console.log("recipient from seen message", data.recipientId);
+          if (setMessages) {
+            setMessages((prev) => {
+              if (!prev || prev.length === 0) {
+                return [
+                  {
+                    messages: [],
+                    prevCursor: "", // or provide an appropriate value
+                    nextCursor: undefined,
+                    count: 1,
+                  },
+                ];
+              }
+
+              const updated = prev.map((page) => ({
+                ...page,
+                messages: page.messages.map((msg) =>
+                  msg.userId === data.recipientId ? { ...msg, seen: true } : msg
+                ),
+              }));
+
+              console.log("updated from listen", updated);
+
+              return updated;
+            });
+          }
+        }
+      );
+      break;
+    case socketEventTypes.IMAGE_UPDATED:
+      socket.on(
+        `${socketEventTypes.IMAGE_UPDATED}`,
+        (data: { userId: string }) => {
+          if (setUser) {
+            setUser(data.userId);
+          }
+        }
+      );
+      break;
     default:
       return null;
   }
 };
 
+export const getImageSize = async (
+  file: File
+): Promise<{ width: number; height: number }> => {
+  // createImageBitmap is fast and avoids extra DOM elements
+  const bitmap = await createImageBitmap(file);
+  const width = bitmap.width;
+  const height = bitmap.height;
+  bitmap.close();
+  return { width, height };
+};

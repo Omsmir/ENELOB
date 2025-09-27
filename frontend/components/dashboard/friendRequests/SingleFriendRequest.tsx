@@ -5,6 +5,7 @@ import { useSession } from "@/components/store/slices/AuthReducer";
 import { Button } from "@/components/ui/button";
 import { multipleQueriesIResponse, User } from "@/types";
 import Image from "next/image";
+import Link from "next/link";
 import React, { useState } from "react";
 
 interface SingleFriendRequestProps {
@@ -52,7 +53,7 @@ const SingleFriendRequest = ({
       {
         id: session._id,
         friendId,
-        acception
+        acception,
       },
       {
         onSuccess: (response) => {
@@ -62,7 +63,10 @@ const SingleFriendRequest = ({
     );
   };
   return (
-    <div className="flex justify-between bg-gray-200 dark:bg-[var(--sidebar-accent)] rounded-md shadow-md my-2 p-4 cursor-pointer transition-all hover:scale-[1.006] hover:bg-gray-300">
+    <Link
+      href={`dashboard/discover/${user._id}`}
+      className="flex justify-between bg-gray-200 dark:bg-[var(--sidebar-accent)] rounded-md shadow-md my-2 p-4 cursor-pointer transition-all hover:scale-[1.006] hover:bg-gray-300"
+    >
       <div className="flex justify-start items-center">
         <div className="size-16 overflow-hidden rounded-full group">
           <Image
@@ -78,8 +82,8 @@ const SingleFriendRequest = ({
           <p className="text-sm text-slate-500">wants to be your friend</p>
         </div>
       </div>
-      {user.sendRequests.filter((request) => request === session._id)
-        .length > 0 ? (
+      {user.sendRequests.filter((request) => request === session._id).length >
+      0 ? (
         user.sendRequests
           .filter((request) => request === session._id)
           .map((_, index) => (
@@ -111,7 +115,7 @@ const SingleFriendRequest = ({
           <p className="text-slate-500 text-sm capitalize">{message}</p>
         </div>
       )}
-    </div>
+    </Link>
   );
 };
 

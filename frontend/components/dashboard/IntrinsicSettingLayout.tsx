@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import { Divider } from "antd";
 import React from "react";
-import Dropdown from "./Dropdown";
+import Dropdown from "../Dropdown";
 
 interface IntrinsicSettingLayoutProps {
   children: React.ReactNode;
@@ -21,6 +21,13 @@ const IntrinsicSettingLayout = ({
   editState,
   setEditState,
 }: IntrinsicSettingLayoutProps) => {
+  const items = [
+    {
+      innerText: "edit",
+      onclick: setEditState,
+      disabled: editState,
+    },
+  ];
   return (
     <div
       className={cn(
@@ -28,19 +35,13 @@ const IntrinsicSettingLayout = ({
         classname
       )}
     >
-        <div className="flex flex-col w-full mb-4 max-h-[120px]">
-          <div className="flex justify-between items-center p-6 w-full max-h-[75px]">
+      <div className="flex flex-col w-full  max-h-[120px]">
+        <div className="flex justify-between items-center p-6 w-full max-h-[75px]">
           <h1 className="text-lg font-semibold capitalize">{title}</h1>
-          {showMenu && (
-            <Dropdown
-              innerText="edit"
-              onclick={setEditState}
-              disabled={editState}
-            />
-          )}
+          {showMenu && <Dropdown items={items} />}
         </div>
-        <Divider className=" dark:bg-slate-500 m-0 w-full" />
-        </div>
+        <Divider className=" dark:bg-slate-500 !m-0 w-full" />
+      </div>
 
       {children}
     </div>

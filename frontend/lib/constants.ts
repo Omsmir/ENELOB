@@ -54,10 +54,13 @@ export const genders = [
   "Omnigender",
   "Xenogender",
 ];
-const existingNotfications = ["system", "message"];
-export const notificationSounds = (
-  tone:tone
-): string | null => {
+const existingNotfications = [
+  "system",
+  "message-send",
+  "message-receive",
+  "message-notification",
+];
+export const notificationSounds = (tone: tone): string | null => {
   const checkValue = existingNotfications.indexOf(tone);
 
   if (checkValue === -1) {
@@ -65,12 +68,16 @@ export const notificationSounds = (
   }
   const systemSounds = {
     system: {
-      title: "public",
       tone: "/assets/audio/airport-call-157168.mp3",
     },
-    message: {
-      title: "AdminOnly",
+    "message-send": {
       tone: "/assets/audio/appointment.mp3",
+    },
+    "message-receive": {
+      tone: "/assets/audio/whatsapp_tone.mp3",
+    },
+    "message-notification": {
+      tone: "/assets/audio/whatsapp_notification.mp3",
     },
   };
   return systemSounds[tone as keyof typeof systemSounds].tone;

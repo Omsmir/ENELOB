@@ -52,9 +52,9 @@ const ReusebleForm = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col p-8 pb-10 pt-0 w-full grid-cols-12"
+        className="flex flex-col p-8 pb-10 pt-0 w-full grid-cols-12 h-full"
       >
-        <div className="grid grid-cols-12">{children}</div>
+        <div className="grid grid-cols-12 gap-4">{children}</div>
         {editState && (
           <div className="flex justify-end items-center w-full ">
             <Button

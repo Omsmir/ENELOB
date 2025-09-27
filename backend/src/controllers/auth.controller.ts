@@ -6,27 +6,27 @@ import {
     createUserSchemaInterface,
     FriendsSchemaInterface,
     getUserSchemaInterface,
-    getUsersSchemaInterface,
     HandleFriendsSchemaInterface,
     MultipleQueriesSchemaInterface,
     SendFriendRequestSchemaInterface,
     updateUserSchemaInterface,
 } from '@/schemas/auth.schema';
 import { CommandInvoker } from '@/classes/behavioral.class';
-import { uploadImageToFirebase } from '@/utils/getPresignedUrl';
-import { filterStringsArray, grouping } from '@/utils/utils';
-import { UserInput } from '@/interfaces/models.interface';
-import { UserDocument } from '@/models/auth.model';
+import { BufferEncoding, getImagesBuffer, grouping } from '@/utils/utils';
 import { FRONTEND_URI, PROJECT_NAME } from '@/config/defaults';
 import { EmailSubjects, SendEmail } from '@/utils/send.email';
+import { reqFileProps } from '@/interfaces/global.interface';
+import BullWorkers from '@/utils/workers';
 
 class UserController extends BaseController {
     private userService: UserService;
     private invoker: CommandInvoker;
+    private queue: BullWorkers;
     constructor() {
         super();
         this.userService = new UserService();
         this.invoker = new CommandInvoker(); // command behavoiral pattern invoker
+        this.queue = new BullWorkers();
     }
 
     public createUserHandler = async (
@@ -55,14 +55,14 @@ class UserController extends BaseController {
             this.invoker.addCommand(
                 new SendEmail({
                     to: createdUser.email,
-                    toPerson:createdUser.full_name,
+                    toPerson: createdUser.full_name,
                     templateName: 'emailVerification.hbs',
                     link: `${FRONTEND_URI}/verify/`, // change it to real verification email link value
                     appName: PROJECT_NAME,
                     year: new Date().getFullYear(),
-                    subject:EmailSubjects.EMAIL_VERIFICATION
+                    subject: EmailSubjects.EMAIL_VERIFICATION,
                 })
-            ); 
+            );
 
             this.invoker.run();
             res.status(201).json({ message: 'user created successfully', createdUser });
@@ -76,7 +76,14 @@ class UserController extends BaseController {
         res: Response
     ) => {
         try {
+            const userId = res.locals.user._id as string;
             const id = req.params.id;
+            const files = req.files as reqFileProps;
+            const uploadQueue = this.queue.getQueue('upload');
+
+            if (id !== userId) {
+                throw new HttpException(401, 'unauthorized operation');
+            }
 
             const existingUser = await this.userService.findUser({ _id: id });
 
@@ -84,34 +91,55 @@ class UserController extends BaseController {
                 throw new HttpException(404, 'user not found');
             }
 
-            const image = req.file as Express.Multer.File;
+            const { profileImg, coverImg } = getImagesBuffer({
+                images: files,
+                type: BufferEncoding.BASE64,
+            });
 
-            const profileImg = await uploadImageToFirebase({
-                image,
-                path: 'users',
+            await uploadQueue.add('uploadToFirebase', {
+                profileImg: profileImg ?? undefined,
+                coverImg: coverImg ?? undefined,
                 userId: existingUser._id as string,
             });
 
-            await this.userService.updateUser(
-                { _id: id },
-                { profileImg },
-                { new: true, runValidators: true }
-            );
-
-            res.status(200).json({ message: 'profile picture has been updated successfully' });
+            res.status(200).json({
+                message: 'you will be notified once the upload successfully complete',
+            });
         } catch (error) {
             this.handleError(res, error);
         }
     };
 
-    public getUser = async (req: Request<getUserSchemaInterface['params']>, res: Response) => {
+    public getUser = async (
+        req: Request<getUserSchemaInterface['params'], {}, {}, getUserSchemaInterface['query']>,
+        res: Response
+    ) => {
         try {
+            const userId = res.locals.user._id as string;
             const id = req.params.id;
+            const friendId = req.query?.friendId;
+            if (id !== userId) {
+                throw new HttpException(401, 'unauthorized operation');
+            }
 
             const existingUser = await this.userService.findUser({ _id: id });
 
             if (!existingUser) {
                 throw new HttpException(404, 'user not found');
+            }
+
+            if (friendId) {
+                const friend = await this.userService.findUser({ _id: friendId });
+
+                if (!friend) {
+                    throw new HttpException(404, `friend doesn't exist`);
+                }
+
+                const updatedFriend = grouping({ user: friend, id });
+
+                res.status(200).json({ user: updatedFriend });
+
+                return;
             }
 
             res.status(200).json({ user: existingUser });
@@ -130,10 +158,16 @@ class UserController extends BaseController {
         res: Response
     ) => {
         try {
+            const userId = res.locals.user._id as string;
             const id = req.params.id;
+
             const query = req.query.query;
             const limit = req.query.limit;
             const cursor = req.query.cursor;
+
+            if (id !== userId) {
+                throw new HttpException(401, 'unauthorized operation');
+            }
 
             const existingUser = await this.userService.findUser({ _id: id });
 
@@ -201,15 +235,33 @@ class UserController extends BaseController {
         res: Response
     ) => {
         try {
+            const userId = res.locals.user._id as string;
             const id = req.params.id;
+
+            if (id !== userId) {
+                throw new HttpException(401, 'unauthorized operation');
+            }
             const friendName = req.query.friendName;
+            const gender = req.query.gender;
+            const olderThan = req.query.olderThan ? new Date(req.query.olderThan) : undefined;
 
             const existingUser = await this.userService.findUser({ _id: id });
 
-            const users = await this.userService.getAllUsers(
-                { full_name: { $regex: `^${friendName}`, $options: 'i' }, _id: { $nin: [id] } },
-                10
-            );
+            const filters: { full_name: any; _id: {}; gender?: string; birthdate?: { $lt: Date } } =
+                {
+                    full_name: { $regex: `^${friendName}`, $options: 'i' },
+                    _id: { $nin: [id] },
+                };
+
+            if (gender) {
+                filters.gender = gender;
+            }
+
+            if (olderThan) {
+                filters.birthdate = { $lt: olderThan }; // example if you want age filter
+            }
+
+            const users = await this.userService.getAllUsers(filters, 10);
 
             if (!existingUser) {
                 throw new HttpException(404, 'user not found');
@@ -220,7 +272,7 @@ class UserController extends BaseController {
                 return;
             }
 
-            const filteredUsers = grouping(users, id);
+            const filteredUsers = grouping({ users, id });
             res.status(200).json(filteredUsers);
         } catch (error) {
             this.handleError(res, error);
@@ -237,8 +289,13 @@ class UserController extends BaseController {
         res: Response
     ) => {
         try {
+            const userId = res.locals.user._id as string;
             const id = req.params.id;
             const friendRequest = req.query.friendId;
+
+            if (id !== userId) {
+                throw new HttpException(401, 'unauthorized operation');
+            }
             const existingUser = await this.userService.findUser({ _id: id });
             const existingFriend = await this.userService.findUser({ _id: friendRequest });
             if (friendRequest === id) {
@@ -381,10 +438,15 @@ class UserController extends BaseController {
         res: Response
     ) => {
         try {
+            const userId = res.locals.user._id as string;
             const id = req.params.id;
+
             const friendId = req.query.friendId;
             const acception = req.query.acception;
 
+            if (id !== userId) {
+                throw new HttpException(401, 'unauthorized operation');
+            }
             const existingUser = await this.userService.findUser({ _id: id });
             const existingFriend = await this.userService.findUser({ _id: friendId });
 
@@ -458,17 +520,17 @@ class UserController extends BaseController {
                     // command behavoiral pattern
                     new SendEmail({
                         to: user.email,
-                        toPerson:user.full_name,
+                        toPerson: user.full_name,
                         templateName: 'emailVerificationAlert.hbs',
                         link: 'http://localhost:8090/api', // change it to real verification email link value
                         appName: PROJECT_NAME,
                         year: new Date().getFullYear(),
-                        subject:EmailSubjects.EMAIL_VERIFICATION_ALERT
+                        subject: EmailSubjects.EMAIL_VERIFICATION_ALERT,
                     })
-                ); 
+                );
             }
 
-            this.invoker.run(); 
+            this.invoker.run();
 
             res.status(200).json({
                 message: 'email verifications have been sent to unverified users',

@@ -10,6 +10,7 @@ import {
   Login,
   LoginResponseI,
   logoutProps,
+  markAsSeen,
   multipleQueriesI,
   multipleQueriesIResponse,
   RefreshTokenResponse,
@@ -57,6 +58,7 @@ export class Services {
 
   public static getUser = ({
     id,
+    friendId,
   }: UserQueryI): CancelablePromise<UserQueryResponseI> => {
     return request(OpenAPI, {
       method: "GET",
@@ -64,12 +66,17 @@ export class Services {
       path: {
         id,
       },
+      query: {
+        friendId,
+      },
     });
   };
 
   public static discoverFriends = ({
     id,
     friendName,
+    gender,
+    olderThan,
   }: discoverFriendI): CancelablePromise<users> => {
     return request(OpenAPI, {
       method: "GET",
@@ -77,6 +84,8 @@ export class Services {
       path: { id },
       query: {
         friendName,
+        gender,
+        olderThan,
       },
       responseHeader: ["authorization"],
     });
@@ -158,7 +167,7 @@ export class Services {
   public static CreateOrUpdateAConversation = ({
     id,
     recipientId,
-    content,
+    data,
   }: ConversationUpdatingProps): CancelablePromise<ConversationCreationResponseI> => {
     return request(OpenAPI, {
       method: "POST",
@@ -171,9 +180,7 @@ export class Services {
       },
       responseHeader: ["authorization"],
 
-      body: {
-        content,
-      },
+      formData: data,
     });
   };
 
@@ -220,6 +227,38 @@ export class Services {
         limit,
       },
       responseHeader: ["authorization"],
+    });
+  };
+
+  public static markAsSeen = ({
+    id,
+    recipientId,
+  }: markAsSeen): CancelablePromise<ResponseMessageI> => {
+    return request(OpenAPI, {
+      method: "PUT",
+      url: "/api/conversations/update/{id}",
+      path: {
+        id,
+      },
+      query: {
+        recipientId,
+      },
+    });
+  };
+
+  public static deleteConversation = ({
+    id,
+    recipientId,
+  }: markAsSeen): CancelablePromise<ResponseMessageI> => {
+    return request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/conversations/{id}",
+      path: {
+        id,
+      },
+      query: {
+        recipientId,
+      },
     });
   };
   public static reIssueAccessToken = ({

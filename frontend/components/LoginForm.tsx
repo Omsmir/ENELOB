@@ -72,6 +72,7 @@ const LoginForm = () => {
           name="email"
           error={form.formState.errors.email}
           state
+          errorState
         />
 
         <div className="flex flex-col">
@@ -84,6 +85,7 @@ const LoginForm = () => {
             type={state ? "text" : "password"}
             error={form.formState.errors.password}
             name="password"
+            errorState
           >
             {state ? (
               <Eye

@@ -187,6 +187,7 @@ pre.shiki {
 .ant-upload-list .ant-upload-select {
   width: 125px !important;
   height: 125px !important;
+  border: 0  !important;
 }
 .ant-upload-list-item-container {
   width: 125px !important;

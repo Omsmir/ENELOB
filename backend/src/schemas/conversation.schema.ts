@@ -16,7 +16,7 @@ const params = {
 
 const querys = {
     query: z.object({
-        recipientId: z.string({ message: 'recipent id is required' }),
+        recipientId: z.string({ message: 'recipient id is required' }),
     }),
 };
 
@@ -45,7 +45,14 @@ export const MarkAsSeenSchema = z.object({
     ...querys
 })
 
+
+
+export const deleteConversationSchema = z.object({
+    ...params,
+    ...querys
+})
+
 export type createConversationSchemaInterface = z.infer<typeof createConversationSchema>;
 export type getConversationSchemaInterface = z.infer<typeof getConversationSchema>;
 export type MarkAsSeenSchemaInterface = z.infer<typeof MarkAsSeenSchema>;
-
+export type deleteConversationSchemaInterface = z.infer<typeof deleteConversationSchema>

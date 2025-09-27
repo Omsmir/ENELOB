@@ -10,6 +10,13 @@ export interface UserDocument extends UserInput, Document {
     comparePassword: (candidatePassword: string) => Promise<boolean>;
 }
 
+const ResuableImgSchema = new mongoose.Schema({
+    filename: { type: String },
+    url: { type: String },
+    uploadedAt: { type: Date, default: Date.now },
+    path: { type: String },
+});
+
 const userSchema = new mongoose.Schema<UserDocument>(
     {
         full_name: { type: String, required: true },
@@ -21,12 +28,8 @@ const userSchema = new mongoose.Schema<UserDocument>(
         gender: { type: String, required: true },
         birthDate: { type: Date, required: true },
         verified: { type: Boolean, default: false },
-        profileImg: {
-            filename: { type: String },
-            url: { type: String },
-            uploadedAt: { type: Date, default: Date.now },
-            path: { type: String },
-        },
+        profileImg: ResuableImgSchema,
+        coverImg: ResuableImgSchema,
         lastSeenAt: { type: Date, default: Date.now },
         friends: { type: [String], ref: 'User', default: [] },
         friendRequests: { type: [String], ref: 'User', default: [] },

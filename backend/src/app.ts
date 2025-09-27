@@ -14,7 +14,7 @@ import http from 'http';
 import { sanitizeRequest } from './middlewares/xss';
 
 import DeserializeMiddleware from './middlewares/deserializeUser';
-import { developedBy, OOP, SIGNALS } from './utils/constants';
+import { developedBy, ENELOB, SIGNALS } from './utils/constants';
 import { gracefulShutdown } from './utils/gracefulEvents';
 import SocketServer from './utils/socketServer';
 import { Server } from 'socket.io';
@@ -50,7 +50,7 @@ class App {
 
     public listen() {
         this.server.listen(this.PORT, async () => {
-            logger.info(`\n${OOP}\n${developedBy}`);
+            logger.info(`\n${ENELOB}\n${developedBy}`);
             logger.info(`===== http://localhost:${this.PORT} =====`);
             logger.info(`===========${this.env}===========`);
             logger.info(`===========port:${this.PORT}=============`);

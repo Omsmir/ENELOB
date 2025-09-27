@@ -3,7 +3,12 @@ import { routes } from '@/interfaces/routes.interface';
 import DeserializeMiddleware from '@/middlewares/deserializeUser';
 import upload from '@/middlewares/multer';
 import { validate } from '@/middlewares/validateResource';
-import { createConversationSchema, getConversationSchema } from '@/schemas/conversation.schema';
+import {
+    createConversationSchema,
+    deleteConversationSchema,
+    getConversationSchema,
+    MarkAsSeenSchema,
+} from '@/schemas/conversation.schema';
 import { json } from 'body-parser';
 import { Request, Response, Router } from 'express';
 
@@ -31,6 +36,19 @@ class ConversationRoute implements routes {
             this.deserializerMiddlewares.requireLogin,
             validate(createConversationSchema),
             this.conversationController.createConversationHandler
+        );
+
+        this.router.put(
+            `${this.path}/update/:id`,
+            this.deserializerMiddlewares.requireLogin,
+            validate(MarkAsSeenSchema),
+            this.conversationController.markAsSeenHandler
+        );
+        this.router.delete(
+            `${this.path}/:id`,
+            this.deserializerMiddlewares.requireLogin,
+            validate(deleteConversationSchema),
+            this.conversationController.deleteConversation
         );
     }
 }

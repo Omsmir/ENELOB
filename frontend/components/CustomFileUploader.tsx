@@ -1,13 +1,16 @@
 "use client";
-import { Upload, UploadFile, Image } from "antd";
+import { Upload, UploadFile, Image, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import React, { useState } from "react";
+import React, { Fragment, useState } from "react";
 import { cn, FileType, getBase64 } from "@/lib/utils";
 import ImgCrop from "antd-img-crop";
-
+import { Button } from "./ui/button";
+import Img from "next/image";
+import { MainLayoutHook } from "./context/LayoutContext";
 export enum FileUploaderType {
   PICTURE = "picture",
   JSON = "json",
+  COVER = "cover",
 }
 
 type CustomFileUploaderProps<T = File[]> = {
@@ -18,6 +21,7 @@ type CustomFileUploaderProps<T = File[]> = {
   plusIcon?: boolean;
   buttonClassName?: string;
   type: FileUploaderType;
+  fieldUploadType?: FileUploaderType;
   maxCount?: number;
   name?: string;
 };
@@ -34,6 +38,7 @@ const RenderUploader = ({ props }: { props: CustomFileUploaderProps<any> }) => {
           plusIcon={props.plusIcon}
           buttonClassName={props.buttonClassName}
           type={FileUploaderType.PICTURE}
+          fieldUploadType={props.fieldUploadType}
         />
       );
 
@@ -49,9 +54,12 @@ const PictureUploader: React.FC<CustomFileUploaderProps<File[]>> = ({
   buttonTitle,
   plusIcon,
   buttonClassName,
+  fieldUploadType,
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
+  const { setPreviewCover, setFilesLength } = MainLayoutHook();
+
   const fileList: UploadFile[] = files
     ? files.map((file, index) => ({
         uid: String(index),
@@ -64,9 +72,23 @@ const PictureUploader: React.FC<CustomFileUploaderProps<File[]>> = ({
   const handleUploadChange = ({ fileList }: { fileList: UploadFile[] }) => {
     const updatedFiles = fileList.map((file) => file.originFileObj as File);
 
-    console.log(updatedFiles); // should show Blob of cropped image
-
     onChange(updatedFiles);
+
+    setFilesLength(updatedFiles.length);
+
+    if (fieldUploadType === FileUploaderType.COVER) {
+      setPreviewCover(
+        updatedFiles[0] ? URL.createObjectURL(updatedFiles[0]) : undefined
+      );
+    }
+
+    fileList.map((file) => {
+      if (file.status === "done") {
+        message.success(`${file.name} file uploaded successfully`);
+      } else if (file.status === "error") {
+        message.error(`${file.name} file upload failed.`);
+      }
+    });
   };
 
   const uploadButton = (
@@ -84,42 +106,74 @@ const PictureUploader: React.FC<CustomFileUploaderProps<File[]>> = ({
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj as FileType);
     }
-
     setPreviewImage(file.url || (file.preview as string));
+
     setPreviewOpen(true);
   };
 
-
-  return (
-    <React.Fragment>
-      <div className={cn("flex w-full", classname)}>
-        <ImgCrop rotationSlider  >
+  switch (fieldUploadType) {
+    case FileUploaderType.COVER:
+      return (
+        <div
+          className={cn(
+            "flex justify-end items-end w-full absolute h-[300px] z-10",
+            classname
+          )}
+        >
           <Upload
             fileList={fileList}
-            listType="picture-circle"
             beforeUpload={() => false}
             onChange={handleUploadChange}
             onPreview={handlePreview}
             maxCount={1}
           >
-            {fileList.length >= 1 ? null : uploadButton}
+            {fileList.length < 1 && (
+              <div className="flex ">
+                <Button
+                  type="button"
+                  className="cursor-pointer bg-transparent hover:bg-transparent hover:text-slate-200 lowercase "
+                >
+                  {buttonTitle || "change cover"}
+                </Button>
+              </div>
+            )}
           </Upload>
-        </ImgCrop>
-      </div>
-      {previewImage && (
-        <Image
-          wrapperStyle={{ display: "none" }}
-          alt="preview"
-          preview={{
-            visible: previewOpen,
-            onVisibleChange: (visible) => setPreviewOpen(visible),
-            afterOpenChange: (visible) => !visible && setPreviewImage(""),
-          }}
-          src={previewImage}
-        />
-      )}
-    </React.Fragment>
-  );
+        </div>
+      );
+    case FileUploaderType.PICTURE:
+      return (
+        <React.Fragment>
+          <div className={cn("flex w-full", classname)}>
+            <ImgCrop rotationSlider>
+              <Upload
+                fileList={fileList}
+                listType="picture-circle"
+                beforeUpload={() => false}
+                onChange={handleUploadChange}
+                onPreview={handlePreview}
+                maxCount={1}
+              >
+                {fileList.length < 1 && uploadButton}
+              </Upload>
+            </ImgCrop>
+          </div>
+          {previewImage && (
+            <Image
+              wrapperStyle={{ display: "none" }}
+              alt="preview"
+              preview={{
+                visible: previewOpen,
+                onVisibleChange: (visible) => setPreviewOpen(visible),
+                afterOpenChange: (visible) => !visible && setPreviewImage(""),
+              }}
+              src={previewImage}
+            />
+          )}
+        </React.Fragment>
+      );
+    default:
+      throw new Error("Unsupported field upload type");
+  }
 };
 
 const CustomFileUploader = (props: CustomFileUploaderProps<any>) => {

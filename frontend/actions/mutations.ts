@@ -11,6 +11,7 @@ import {
   handleFriendRequestI,
   Login,
   logoutProps,
+  markAsSeen,
   registerProps,
   reIssueAccessTokenProps,
   sendFriendRequest,
@@ -77,10 +78,12 @@ export class Mutations {
           expiresAt: decodedToken?.exp && decodedToken.exp * 1000,
           _id: decodedToken?._id,
           full_name: decodedToken?.full_name,
-          profileImg: decodedToken?.profileImg.url,
+          profileImg: decodedToken?.profileImg?.url,
+          coverImg: decodedToken?.coverImg?.url,
           verified: decodedToken?.verified,
           accessToken: response.accessToken,
           lastSeenAt: decodedToken.lastSeenAt,
+          friends: decodedToken?.friends,
         };
 
         dispatch(setUserSession(session));
@@ -104,23 +107,16 @@ export class Mutations {
   };
 
   public static useSendFriendRequest = (api: NotificationInstance) => {
-    const { setIsLoading } = DashboardHook();
-    const queryClient = useQueryClient();
     return useMutation({
       mutationFn: ({ id, friendId }: sendFriendRequest) =>
         Services.sendFriendRequest({ id, friendId }),
-      onMutate: () => {
-        setIsLoading(true);
-      },
       onError: async (error) => {
-        setIsLoading(false);
         HandleAxiosErrors({ api, error });
       },
       onSuccess: async (response) => {
         api.success({
           message: response.message,
         });
-        setIsLoading(false);
       },
     });
   };
@@ -171,11 +167,11 @@ export class Mutations {
   public static useUpdateConversation = (api: NotificationInstance) => {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: ({ id, recipientId, content }: ConversationUpdatingProps) =>
+      mutationFn: ({ id, recipientId, data }: ConversationUpdatingProps) =>
         Services.CreateOrUpdateAConversation({
           id,
           recipientId,
-          content,
+          data,
         }),
       onMutate: () => {},
       onError: async (error) => {
@@ -217,16 +213,39 @@ export class Mutations {
     });
   };
 
-
   public static useReissueAccessToken = (api: NotificationInstance) => {
     return useMutation({
-      mutationFn: ({id}:reIssueAccessTokenProps) => Services.reIssueAccessToken({id}),
-      onError:(error) => {
-        HandleAxiosErrors({api,error})
+      mutationFn: ({ id }: reIssueAccessTokenProps) =>
+        Services.reIssueAccessToken({ id }),
+      onError: (error) => {
+        HandleAxiosErrors({ api, error });
       },
-      onSuccess:async(reponse) => {
-        
-      }
-    })
-  }
+    });
+  };
+
+  public static useMarkAsSeen = (api: NotificationInstance) => {
+    return useMutation({
+      mutationFn: ({ id, recipientId }: markAsSeen) =>
+        Services.markAsSeen({ id, recipientId }),
+      onError: (error) => {
+        HandleAxiosErrors({ api, error });
+      },
+    });
+  };
+
+  public static useDeleteConversation = (api: NotificationInstance) => {
+    return useMutation({
+      mutationFn: ({ id, recipientId }: markAsSeen) =>
+        Services.deleteConversation({ id, recipientId }),
+      onError: (error) => {
+        HandleAxiosErrors({ api, error });
+      },
+      onSuccess: async (response) => {
+        api.success({
+          message: "Conversation deletion",
+          description: response.message,
+        });
+      },
+    });
+  };
 }

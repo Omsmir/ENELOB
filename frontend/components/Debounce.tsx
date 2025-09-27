@@ -1,7 +1,10 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 
-export function useDebounce<T>(value: T, delay: number = 500): T {
+export function useDebounce<T>(
+  value: T,
+  delay: number = 500
+): { friendName: T } {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
@@ -14,5 +17,8 @@ export function useDebounce<T>(value: T, delay: number = 500): T {
     };
   }, [value, delay]);
 
-  return debouncedValue;
+  const data = {
+    friendName: debouncedValue,
+  };
+  return data;
 }

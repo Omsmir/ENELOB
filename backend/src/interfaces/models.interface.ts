@@ -24,6 +24,7 @@ export interface UserInput {
     gender: string;
     birthDate: Date;
     profileImg?: ImgMainType;
+    coverImg?: ImgMainType;
     lastSeenAt?: Date;
     friendRequests: string[];
     friends: string[];
@@ -36,7 +37,7 @@ export interface sessionInput {
 }
 
 export type Message = {
-    _id?:mongoose.Schema.Types.ObjectId
+    _id?: mongoose.Schema.Types.ObjectId;
     content?: string;
     seen?: boolean;
     userId: UserDocument['_id'];
@@ -46,4 +47,5 @@ export type Message = {
 export interface ConversationInput {
     peers: string[];
     messages?: Message[];
+    userId: UserDocument['_id'];
 }

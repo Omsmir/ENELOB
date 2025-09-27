@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: isProd
       ? "https://localhost"
-      : "https://localhost",
+      : "http://localhost:8090",
   },
 };
 

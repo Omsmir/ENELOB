@@ -42,7 +42,10 @@ class UserRoute implements routes {
 
         this.router.put(
             `${this.path}/profile-picture/:id`,
-            upload.single('profileImg'),
+            upload.fields([
+                { name: 'profileImg', maxCount: 1 },
+                { name: 'coverImg', maxCount: 1 },
+            ]),
             this.deserializerMiddlewares.requireLogin,
             validate(updateUserSchema),
             this.userController.UpdateProfilePicture

@@ -77,6 +77,7 @@ const RegisterForm = () => {
           name="full_name"
           error={form.formState.errors.full_name}
           state
+          errorState
         />
         <CustomFormField
           control={form.control}
@@ -87,6 +88,7 @@ const RegisterForm = () => {
           name="email"
           error={form.formState.errors.email}
           state
+          errorState
         />
 
         <CustomFormField
@@ -98,6 +100,7 @@ const RegisterForm = () => {
           type={state ? "text" : "password"}
           error={form.formState.errors.password}
           name="password"
+          errorState
         >
           {state ? (
             <Eye onClick={() => setState(false)} size="20px" cursor="pointer" />
@@ -119,6 +122,7 @@ const RegisterForm = () => {
           type={state ? "text" : "password"}
           error={form.formState.errors.passwordConfirm}
           name="passwordConfirm"
+          errorState
         >
           {state ? (
             <Eye onClick={() => setState(false)} size="20px" cursor="pointer" />
@@ -138,6 +142,7 @@ const RegisterForm = () => {
             name="gender"
             placeholder="select a gender"
             className="max-h-[250px] "
+            errorState
           >
             {genders.map((value, index) => (
               <SelectItem
@@ -156,6 +161,7 @@ const RegisterForm = () => {
             fieldType={FormFieldType.DATE}
             label="Birthday"
             name="birthDate"
+            errorState
           />
         </div>
 

@@ -28,27 +28,34 @@ const deletePayload = {
     }),
 };
 
-const updatePayload = {
+const multerFileSchema = z
+    .custom<Express.Multer.File>((file) => file !== undefined && file !== null, {
+        message: 'File is required',
+    })
+    .refine(
+        (file) => {
+            if (!file) return false;
+            const fileName = file.originalname.toLowerCase();
+            const extension = fileName.split('.').pop();
+            return validImageExtensions.includes(extension || '');
+        },
+        { message: 'Invalid image extension' }
+    )
+    .refine(
+        (file) => {
+            if (!file) return false;
+            return file.mimetype.startsWith('image/');
+        },
+        { message: 'File must be an image' }
+    );
+
+// Schema for update payload
+export const updatePayload = {
     file: z.object({
-        profileImg: z
-            .custom<Express.Multer.File | undefined>(
-                (file) => file !== undefined && file !== null,
-                {
-                    message: 'please select a profile picture',
-                }
-            )
-            .refine(
-                (file) => {
-                    if (!file) return false;
-                    const fileName = file.originalname.toLowerCase();
-                    const extension = fileName.split('.').pop();
-                    return validImageExtensions.includes(extension || '');
-                },
-                { message: 'Invalid image extension' }
-            ),
+        profileImg: multerFileSchema.optional(),
+        coverImg: multerFileSchema.optional(),
     }),
 };
-
 const params = {
     params: z.object({
         id: z.string({ required_error: 'user id is required' }),
@@ -60,9 +67,17 @@ const friendRequestQuery = {
     }),
 };
 
+const friendQuery = {
+    query: z.object({
+        friendId: z.string({ required_error: 'friendId is required' }).optional(),
+    }),
+};
+
 const friendsPayload = {
     query: z.object({
         friendName: z.string({ required_error: 'friendName is required' }),
+        gender: z.enum(genders as [string, ...string[]]).optional(),
+        olderThan: z.string().optional(),
     }),
 };
 
@@ -132,6 +147,7 @@ export const getUsersSchema = z.object({
 
 export const getUserSchema = z.object({
     ...params,
+    ...friendQuery,
 });
 
 export type createUserSchemaInterface = z.infer<typeof createUserSchema>;

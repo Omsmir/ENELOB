@@ -13,11 +13,25 @@ import {
 } from "../ui/dropdown-menu";
 import { ChevronUp, User } from "lucide-react";
 import ThemeToggle from "../togglers/ToggleTheme";
-import LogoutButton from "../togglers/LogoutButton";
 import { useSession } from "../store/slices/AuthReducer";
+import { Mutations } from "@/actions/mutations";
+import { DashboardHook } from "../context/Dashboardprovider";
+import ReuseableEventButton from "../togglers/ReuseableEventButton";
 
 const SideBarFooter = () => {
-  const {  session } = useSession();
+  const { session } = useSession();
+  const { api } = DashboardHook();
+  const logout = Mutations.useLogout(api);
+
+  const clickHandler = async () => {
+    await logout.mutateAsync({ id: session._id });
+  };
+  const fire_description = {
+    title: "Do you want to log out?",
+    confirmed: "Logged out",
+    denied: "Not logged out",
+    confirmTitle: "Log out",
+  };
   return (
     <SidebarFooter>
       <SidebarMenu>
@@ -38,7 +52,12 @@ const SideBarFooter = () => {
               </DropdownMenuItem>
 
               <DropdownMenuItem className="cursor-pointer hover:bg-slate-200 p-0 dark:hover:bg-[var(--sidebar-background)]">
-                <LogoutButton className="cursor-pointer w-full bg-transparent text-black dark:text-slate-50 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-900 transition-colors" />
+                <ReuseableEventButton
+                  fire_description={fire_description}
+                  clickHandler={clickHandler}
+                  title="log out"
+                  className="cursor-pointer w-full bg-transparent text-black dark:text-slate-50 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-900 transition-colors"
+                />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

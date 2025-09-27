@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Form } from "@/components/ui/form";
 import CustomFormField from "@/components/CustomFormField";
 import { FormFieldType } from "@/components/CustomFormField";
-import {  useState } from "react";
+import { useEffect, useState } from "react";
 import SubmitButton from "../togglers/SubmitButton";
 import { discoverSchema } from "@/lib/vaildation";
 import { DashboardHook } from "../context/Dashboardprovider";
@@ -21,24 +21,23 @@ import { useSession } from "../store/slices/AuthReducer";
 
 const DiscoverQuery = () => {
   const [value, setValue] = useState<string>("");
-  const debouncedValue = useDebounce(value, 500);
-  const [valueOf, setValueOf] = useState("");
-  const [users, setUsers] = useState<User[] | []>([]);
-  const [isActive, setIsActive] = useState<"general" | "filtered">("general");
-
-  const { api, contextHolder, isLoading } = DashboardHook();
+  const debouncedData = useDebounce(value, 500);
+  const [isActive, setIsActive] = useState<"general" | "filtered">("filtered");
+  const [filiteredUserObject, setFilteredUserObject] = useState<
+    { friendName: string; olderThan: Date; gender: string } | {}
+  >({});
+  const { contextHolder, isLoading } = DashboardHook();
   const { session } = useSession();
 
-  const { data,isFetching,error,isError } = Queries.UseDiscoverFriends({
+  const { data, isFetching, error, isError } = Queries.UseDiscoverFriends({
     id: session._id,
-    friendName: debouncedValue
-    
+    ...debouncedData,
+    ...filiteredUserObject,
   });
 
   const onSubmit = async (values: z.infer<typeof discoverSchema>) => {
     try {
-      setValueOf(values.friendName);
-      console.log(valueOf);
+      setFilteredUserObject(values);
     } catch (error: any) {
       console.log(error.message);
     }
@@ -49,6 +48,12 @@ const DiscoverQuery = () => {
       friendName: "",
     },
   });
+
+  useEffect(() => {
+    return () => {
+      setFilteredUserObject({});
+    }
+  },[isActive])
 
   return (
     <Form {...form}>
@@ -62,7 +67,7 @@ const DiscoverQuery = () => {
             <h1 className="font-bold text-3xl text-[var(--sidebar-accent)] dark:text-slate-50 capitalize p-8">
               discover friends
             </h1>
-            <Tabs defaultValue="general" className="w-full p-4">
+            <Tabs defaultValue="filtered" className="w-full p-4">
               <TabsList className="bg-slate-200 dark:bg-slate-800 w-full rounded-md">
                 <TabsTrigger
                   value="general"
@@ -95,40 +100,43 @@ const DiscoverQuery = () => {
                   name="friendName"
                   placeholder="Omar Fouad"
                   className="p-2"
+                  errorState
                 />
 
-                  <div className="flex">
-                <div className="w-1/2 mr-1">
+                <div className="flex">
+                  <div className="w-1/2 mr-1">
                     <CustomFormField
-                        control={form.control}
-                        fieldType={FormFieldType.DATE}
-                        label="Birth Date"
-                        name="birthDate"
+                      control={form.control}
+                      fieldType={FormFieldType.DATE}
+                      label="Birth Date"
+                      name="olderThan"
+                      errorState
                     />
-                </div>
-                <div className="w-1/2">
+                  </div>
+                  <div className="w-1/2">
                     <CustomFormField
-                        fieldType={FormFieldType.SELECT}
-                        control={form.control}
-                        label="gender"
-                        name="gender"
-                        placeholder="Select a gender"
-                        className="max-h-[250px]"
+                      fieldType={FormFieldType.SELECT}
+                      control={form.control}
+                      label="gender"
+                      name="gender"
+                      placeholder="Select a gender"
+                      className="max-h-[250px]"
+                      errorState
                     >
-                        {genders.map((value, index) => (
-                            <SelectItem
-                                key={index}
-                                value={value}
-                                className="cursor-pointer transition-colors dark:hover:bg-slate-200 dark:hover:text-black dark:focus:bg-slate-200"
-                            >
-                                <div className="flex justify-center items-center">
-                                    <p className="text-md">{value}</p>
-                                </div>
-                            </SelectItem>
-                        ))}
+                      {genders.map((value, index) => (
+                        <SelectItem
+                          key={index}
+                          value={value}
+                          className="cursor-pointer transition-colors dark:hover:bg-slate-200 dark:hover:text-black dark:focus:bg-slate-200"
+                        >
+                          <div className="flex justify-center items-center">
+                            <p className="text-md">{value}</p>
+                          </div>
+                        </SelectItem>
+                      ))}
                     </CustomFormField>
+                  </div>
                 </div>
-            </div>
 
                 <SubmitButton
                   isLoading={isLoading}
@@ -150,8 +158,13 @@ const DiscoverQuery = () => {
             )}
           </div>
         </div>
-      
-        <CardsLayout users={data} isFetching={isFetching} error={error} isError={isError} />
+
+        <CardsLayout
+          users={data}
+          isFetching={isFetching}
+          error={error}
+          isError={isError}
+        />
       </form>
     </Form>
   );

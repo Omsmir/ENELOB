@@ -12,10 +12,10 @@ import {
 } from "@/types";
 
 export class Queries {
-  public static UseDiscoverFriends = ({ id, friendName }: discoverFriendI) => {
+  public static UseDiscoverFriends = ({ id, friendName,gender,olderThan }: discoverFriendI) => {
     return useQuery({
-      queryFn: () => Services.discoverFriends({ id, friendName }),
-      queryKey: ["friendsDiscovered", friendName],
+      queryFn: () => Services.discoverFriends({ id, friendName ,gender,olderThan}),
+      queryKey: ["friendsDiscovered", `${friendName}-${gender ?? ""}-${olderThan ?? ""}`],
       enabled: !!friendName,
     });
   };
@@ -67,10 +67,10 @@ export class Queries {
     });
   };
 
-  public static useGetUser = ({ id }: UserQueryI) => {
+  public static useGetUser = ({ id,friendId }: UserQueryI) => {
     return useQuery({
       queryKey: [`user-${id}`],
-      queryFn: () => Services.getUser({ id }),
+      queryFn: () => Services.getUser({ id ,friendId}),
     });
   };
 }

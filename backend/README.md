@@ -1,15 +1,22 @@
-# 🧠 12-Week Deep OOP Mastery Program (with TypeScript + Express.js)
+# ⚡ ENELOB — Chat App Backend (Express.js + TypeScript + Redis + MongoDB)
 
-This repository documents a **12-week advanced Object-Oriented Programming (OOP) roadmap**, adapted into a **class-based backend architecture** using **TypeScript**, **Express.js**, and modern patterns like **Clean Code**, **SOLID principles**, and **Design Patterns**. This codebase includes:
+This repository powers the **backend of the ENELOB Chat Application**, a **real-time chat platform** built with **Express.js**, **TypeScript**, **Redis**, and **MongoDB**.  
+It follows a **modular, production-grade architecture** with emphasis on **Clean Code**, **SOLID principles**, and **scalability**.  
 
-- Highly structured backend with **ESLint**, **Prettier**, and **strict tsconfig.json**
-- A powerful **path aliasing system** for modular architecture
-- Deep exploration of OOP concepts
-- Practical implementation of design patterns and system design
+The backend provides:
 
-> 🧩 **Note:** There aren't isolated tutorials for each week. Instead, the full backend server composes all the weekly concepts into a unified, production-grade architecture. However, design pattern examples and learning materials are organized separately inside the `@classes` folder to teach and demonstrate each pattern in isolation.
+- 🚀 **TypeScript-powered Express.js server** with strict `tsconfig.json`
+- 🛡️ **JWT Authentication + Refresh Tokens** middleware
+- 📡 **WebSocket (Socket.IO) integration** for real-time messaging & notifications
+- 🗄️ **MongoDB schemas** for users, messages, conversations, and friendships
+- ⚙️ **Redis + BullMQ** for background jobs (image uploads, queues, notifications)
+- 🔐 **Role-based access control (RBAC)** with middleware
+- 📂 **Path aliasing** for a clean, modular project structure
+- 🧩 **Zod validation** for API schemas
+- 🛠️ **ESLint + Prettier** for strict linting and formatting
 
 ---
+
 
 ## 📁 Folder Aliases (tsconfig.json)
 
@@ -45,110 +52,6 @@ This repository documents a **12-week advanced Object-Oriented Programming (OOP)
 | `@services/*`    | Business logic classes (e.g. UserService, AuthService)                                 |
 | `@utils/*`       | Utility functions, helpers, formatters, loggers                                        |
 | `@classes/*`     |  Design patterns classes, starting from Creational to Behavioral and **teaching patterns** |
-
----
-
-## 📚 Week-by-Week Curriculum
-
-### ✅ Week 1: OOP Basics (Encapsulation, Classes, Instances)
-
-> **Note:** Services, Controllers, App and etc.. all use the OOP basic methods below
-
----
-- Create real-world class models
-- Understand `private`, `protected`, `public`
-- Learn `getters methods`, `setters methods`, `constructor`
-
-### ✅ Week 2: Inheritance & Polymorphism
-
-> **Note:** Controllers, Classes use the OOP basic methods below
-
----
-- Class hierarchies: `Animal -> Dog/Cat`
-- Method overriding
-- Use interfaces and abstract classes
-
-### ✅ Week 3: SOLID Principles
-
-> **Note:** Controllers, Services, Routes, and Classes all use the OOP basic methods below
-
----
-
-- Single Responsibility
-- Open/Closed
-- Liskov Substitution
-- Interface Segregation
-- Dependency Inversion
-
-### ✅ Week 4: Composition Over Inheritance
-
-> **Note:** Controllers, Services, Routes, and Classes all use the OOP basic methods below
-
----
-
-- Mixins with `Object.assign`
-- Strategy pattern
-- Favor small components over rigid inheritance trees
-
-### ✅ Week 5: Creational Design Patterns
-
-> **Note:** Classes (Creational.class.ts) use the OOP basic methods below
-
----
-
-- **Factory Pattern** (e.g. `UserFactory`)
-- **Builder Pattern** (`ReportBuilder`)
-- **Singleton** (`DBConnection`)
-- **Abstract Factory**
-
-### ✅ Week 6: Structural Design Patterns
-
-> **Note:** Classes (Structural.class.ts) use the OOP basic methods below
-
----
-
-- **Adapter** (`LoggerAdapter`)
-- **Decorator** (`TimestampLogger`)
-- **Composite** (`ShapeGroup`)
-- **Proxy** (`LoggingProxy`)
-
-### ✅ Week 7: Behavioral Design Patterns
-
-> **Note:** Classes (Behavioral.class.ts) use the OOP basic methods below
-
----
-
-- **Observer** (Event system)
-- **Command** (Encapsulate request logic)
-- **Strategy** (Pluggable behaviors)
-- **State** (Finite state machine in backend)
-
-### ✅ Week 8: Domain Modeling + Value Objects
-
-- Domain-Driven Design intro
-- Encapsulate logic into Value Objects (e.g. `Money`, `Email`, `PhoneNumber`)
-
-### ✅ Week 9: Repositories & Aggregates
-
-- Persistence layer abstraction
-- Domain Aggregate root enforcement (e.g. `Order`)
-
-### ✅ Week 10: Event-Driven Architecture
-
-- Internal domain events
-- Event dispatchers, listeners
-- Async patterns with Redis/Queue
-
-### ✅ Week 11: Advanced Types + Refactoring
-
-- Utility types, template literals, enums, generics
-- Refactor messy classes into clean interfaces and reusable components
-
-### ✅ Week 12: Testing OOP Systems
-
-- Unit testing services, repositories, controllers using Jest
-- Mocks, spies, and stubs
-- Full coverage of SOLID and patterns under test
 
 ---
 
@@ -253,25 +156,3 @@ npm run test
 
 ---
 
-
-## 🏁 Final Deliverables
-
-- [ ] `@/classes/creational-patterns`
-- [ ] `@/classes/structural-patterns`
-- [ ] `@/classes/behavioral-patterns`
-- [ ] `@/classes/domain-modeling`
-- [ ] `/event-driven`
-- [ ] `/test-suite`
-
-> Build your own advanced backend playground and master Object-Oriented design with real architecture.
-
----
-
-## 👨‍🏫 Inspired By:
-
-- Refactoring.Guru
-- TypeScript Deep Dive
-- Domain-Driven Design (Vaughn Vernon / Eric Evans)
-- Clean Architecture by Uncle Bob
-
----

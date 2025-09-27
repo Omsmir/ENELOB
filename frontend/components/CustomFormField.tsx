@@ -7,7 +7,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Control, FieldError } from "react-hook-form";
+import { Control } from "react-hook-form";
 import { Textarea } from "./ui/textarea";
 
 import {
@@ -67,6 +67,8 @@ interface CustomProps {
   showTimeSelect?: boolean;
   timeOnly?: boolean;
   calenderDays?: Date[];
+  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  errorState?: boolean;
 }
 
 const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
@@ -178,8 +180,10 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
     case FormFieldType.TEXTAREA:
       return (
         <div className="flex">
+          {props.children}
           <FormControl>
             <Textarea
+              onKeyDown={(e) => props.onKeyDown && props.onKeyDown(e)}
               placeholder={props.placeholder}
               {...field}
               disabled={props.disabled}
@@ -193,15 +197,12 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
       );
     case FormFieldType.SELECT:
       return (
-        <div
-          className={`shad-select-custom  ${props.className}`}
-        >
+        <div className={`shad-select-custom  ${props.className}`}>
           <FormControl>
             <Select
               onValueChange={field.onChange}
               value={field.value}
               disabled={props.disabled}
-        
             >
               <FormControl>
                 <SelectTrigger
@@ -211,7 +212,9 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
                 </SelectTrigger>
               </FormControl>
               <SelectContent
-                className={cn(" dark:bg-slate-50 dark:text-black max-h-[225px]")}
+                className={cn(
+                  " dark:bg-slate-50 dark:text-black max-h-[225px]"
+                )}
               >
                 {props.children}
               </SelectContent>
@@ -275,7 +278,7 @@ const CustomFormField = (props: CustomProps) => {
           </div>
           <RenderField field={field} props={props} />
 
-          <FormMessage className="shad-error" />
+          {props.errorState && <FormMessage className="shad-error" />}
         </FormItem>
       )}
     />

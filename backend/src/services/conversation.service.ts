@@ -3,13 +3,17 @@ import { conversationDocument, ConversationModel } from '@/models/conversation.m
 import { omit } from 'lodash';
 import { ConversationInput, Message, UserInput } from '@/interfaces/models.interface';
 import HttpException from '@/exceptions/httpException';
+import UserService from './auth.service';
 
 // SOLID principles interpreted
 
 // All the route Class is a single responsability
 class ConversationService {
     // dependency injection: composition over inheritance
-    constructor(private conversationModel = ConversationModel) {}
+    private userService: UserService;
+    constructor(private conversationModel = ConversationModel) {
+        this.userService = new UserService();
+    }
 
     public createConversation = async (input: ConversationInput) => {
         return await this.conversationModel.create(input);
@@ -23,9 +27,12 @@ class ConversationService {
         return await this.conversationModel.findOneAndUpdate(query, update, options);
     };
 
-
     public getConversation = async (query: FilterQuery<conversationDocument>) => {
         return await this.conversationModel.findOne(query).lean();
+    };
+
+    public getAllConversation = async (query: FilterQuery<conversationDocument>) => {
+        return await this.conversationModel.find(query).lean();
     };
     public getMessagesWithPagination = async (
         messagesExisted: FlattenMaps<Message>[],
@@ -71,6 +78,44 @@ class ConversationService {
                   : String(messages[messages.length - 1]._id);
 
         return { messages, nextCursor, prevCursor };
+    };
+
+    public deleteConversation = async (query: FilterQuery<conversationDocument>) => {
+        return await this.conversationModel.findOneAndDelete(query);
+    };
+
+    public validateConversation = async (
+        recipientId: string,
+        userId: string,
+        localId: string,
+        deleteError: 200 | 404
+    ) => {
+        if (userId !== localId) {
+            throw new HttpException(401, 'unauthorized operation');
+        }
+        if (userId === recipientId) {
+            throw new HttpException(403, 'Dublicate peer error');
+        }
+        const user = await this.userService.findUser({ _id: userId });
+
+        const recipient = await this.userService.findUser({ _id: recipientId });
+
+        if (!user || !recipient) {
+            throw new HttpException(404, 'either the user or the recipient are not found');
+        }
+
+        const existedConversation = await this.getConversation({
+            peers: { $all: [recipientId, userId] },
+            userId,
+        });
+
+        if (!existedConversation) {
+            throw new HttpException(
+                deleteError,
+                `there is no active conversation between you and ${recipient.full_name}`
+            );
+        }
+        return { recipient, user, existedConversation };
     };
 }
 

@@ -20,25 +20,24 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${poppins.className}`}>
-        <ReduxProvider >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-              <PrimeReactProvider>
+        <ReduxProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <PrimeReactProvider>
+              <QueryProvider>
                 <DashboardProvider>
-                  <QueryProvider>
-                    <MainLayoutProvider>{children}</MainLayoutProvider>
-                  </QueryProvider>
+                  <MainLayoutProvider>{children}</MainLayoutProvider>
                 </DashboardProvider>
-              </PrimeReactProvider>
-        </ThemeProvider>
+              </QueryProvider>
+            </PrimeReactProvider>
+          </ThemeProvider>
         </ReduxProvider>
       </body>
     </html>

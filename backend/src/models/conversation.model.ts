@@ -20,7 +20,7 @@ const ImageSchema = new mongoose.Schema<ImgMainType>(
 // Message schema
 const MessageSchema = new mongoose.Schema<Message>(
     {
-        content: { type: String,default:""},
+        content: { type: String, default: '' },
         seen: { type: Boolean, default: false },
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         sentAt: { type: Date, default: Date.now() },
@@ -31,10 +31,18 @@ const MessageSchema = new mongoose.Schema<Message>(
 
 const ConversationSchema = new mongoose.Schema<conversationDocument>(
     {
-        peers: [{ type:String, ref: 'User', required: true }], // one-to-one chat (2 participants)
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+        },
+        peers: [{ type: String, ref: 'User', required: true }], // one-to-one chat (2 participants)
         messages: { type: [MessageSchema], default: [] },
     },
     { timestamps: true }
 );
 
-export const ConversationModel = mongoose.model<conversationDocument>('Conversations', ConversationSchema);
+export const ConversationModel = mongoose.model<conversationDocument>(
+    'Conversations',
+    ConversationSchema
+);

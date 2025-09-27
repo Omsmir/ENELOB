@@ -33,7 +33,7 @@ const AccountInfo = ({ user, isFetching, form }: AccountInfoProps) => {
       editable: true,
     },
     {
-      value: `#${user?._id.slice(0, 11).toUpperCase()}`,
+      value: user?._id && `#${user?._id.slice(0, 11).toUpperCase()}`,
       title: "Account Number",
     },
     {

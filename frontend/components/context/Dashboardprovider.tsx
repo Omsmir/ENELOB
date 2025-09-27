@@ -16,11 +16,17 @@ import { io, Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { User } from "@/types";
 import { socketEventTypes, SocketListener } from "@/lib/utils";
-import { addUser, removeUser } from "../store/slices/usersReducer";
+import {
+  addUser,
+  removeUser,
+  updateLastSeen,
+} from "../store/slices/usersReducer";
 import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "next-themes";
 import { RootState } from "../store/store";
 import { useSession } from "../store/slices/AuthReducer";
+import { Mutations } from "@/actions/mutations";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 interface DashboardContextProps {
   api: NotificationInstance;
@@ -37,8 +43,22 @@ interface DashboardContextProps {
   theme: string | undefined;
   setTheme: Dispatch<SetStateAction<string>>;
   isActive: (id: string) => boolean;
-
+  UseMediaQuery: ({ MEDIA_TYPE }: UseMediaQueryProps) => boolean;
+  unseenMessages: number;
+  setUnseenMessages: Dispatch<SetStateAction<number>>;
 }
+
+export enum ResponsiveMedia {
+  IS_MOBILE = "640px",
+  IS_TABLET = "768px",
+  IS_LAPTOP = "1024px",
+  IS_DESKTOP = "1280px",
+  IS_WIDE = "1536px",
+}
+
+type UseMediaQueryProps = {
+  MEDIA_TYPE: ResponsiveMedia;
+};
 
 const DashboardContext = createContext<DashboardContextProps | null>(null);
 
@@ -50,6 +70,7 @@ export const DashboardProvider = ({
   const dispatch = useDispatch();
 
   const [api, contextHolder] = notification.useNotification();
+  const updateSession = Mutations.useReissueAccessToken(api);
   const [state, setState] = useState<boolean>(false);
 
   const { session } = useSession();
@@ -61,19 +82,30 @@ export const DashboardProvider = ({
   const [friend, setFriend] = useState<User | undefined>(undefined);
   const { theme, setTheme } = useTheme();
   const { onlineUsers } = useSelector((state: RootState) => state.users);
- 
+  const [unseenMessages, setUnseenMessages] = useState<number>(0);
+  const UseMediaQuery = ({ MEDIA_TYPE }: UseMediaQueryProps): boolean => {
+    return useMediaQuery(`(min-width:${MEDIA_TYPE})`);
+  };
   const isActive = (id: string): boolean => {
     const filiteredActiveUser = onlineUsers.filter((user) => user === id);
 
     return filiteredActiveUser && filiteredActiveUser.length > 0;
   };
 
+  const reissueAccessToken = (userId: string) => {
+    updateSession.mutate({ id: userId });
+    api.success({
+      description: "profile update",
+      message: "image updated successfully",
+      duration: 1000,
+      showProgress: false,
+    });
+  };
   const handleAddUserOnline = (id: string) => {
     dispatch(addUser(id));
   };
 
   const handleRemoveUserOnline = (id: string) => {
-    console.log("remove", id);
     dispatch(removeUser(id));
   };
   // 👇 initialize socket only when session is ready
@@ -84,7 +116,7 @@ export const DashboardProvider = ({
     if (!socketRef.current) {
       socketRef.current = io("http://localhost:8090", {
         auth: { token },
-        withCredentials:true,
+        withCredentials: true,
         autoConnect: true,
         reconnection: true,
       });
@@ -96,15 +128,19 @@ export const DashboardProvider = ({
       SocketListener({
         socket: socketRef.current,
         eventValue: socketEventTypes.ONLINE_USERS,
-        tone: "message",
         setUser: handleAddUserOnline,
       });
 
       SocketListener({
         socket: socketRef.current,
         eventValue: socketEventTypes.OFFLINE_USERS,
-        tone: "message",
         setUser: handleRemoveUserOnline,
+      });
+
+      SocketListener({
+        socket: socketRef.current,
+        eventValue: socketEventTypes.IMAGE_UPDATED,
+        setUser: reissueAccessToken,
       });
 
       socketRef.current.on("disconnect", () => {
@@ -138,8 +174,10 @@ export const DashboardProvider = ({
         friend,
         theme,
         setTheme,
-        isActive
-      
+        isActive,
+        UseMediaQuery,
+        setUnseenMessages,
+        unseenMessages,
       }}
     >
       {children}

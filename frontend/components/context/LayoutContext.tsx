@@ -27,6 +27,10 @@ interface LayoutContextProps {
   form: any;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   isLoading: boolean;
+  setPreviewCover: Dispatch<SetStateAction<string | undefined>>;
+  previewCover: string | undefined;
+  setFilesLength: Dispatch<SetStateAction<number>>;
+  fileLength: number;
 }
 
 const LayoutContext = createContext<LayoutContextProps | null>(null);
@@ -42,6 +46,11 @@ export const MainLayoutProvider = ({
   const [editState, setEditState] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
   const { session } = useSession();
+
+  const [previewCover, setPreviewCover] = useState<string | undefined>(
+    undefined
+  );
+  const [fileLength, setFilesLength] = useState<number>(0);
 
   const form = useForm<z.infer<typeof AccountSchema>>({
     resolver: zodResolver(AccountSchema),
@@ -63,6 +72,10 @@ export const MainLayoutProvider = ({
         form,
         isLoading,
         setIsLoading,
+        setPreviewCover,
+        previewCover,
+        fileLength,
+        setFilesLength
       }}
     >
       {children}

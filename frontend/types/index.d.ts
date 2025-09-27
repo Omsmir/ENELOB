@@ -6,8 +6,6 @@ declare interface ConstructedLayoutProps {
 
 declare type theme = "github-dark" | "vitesse-dark" | "nord";
 
-
-
 declare type registerProps = {
   full_name: string;
   email: string;
@@ -19,7 +17,7 @@ declare type registerProps = {
 
 declare type LoginResponseI = {
   accessToken: string;
-  message:string
+  message: string;
 };
 declare type Login = {
   email: string;
@@ -47,28 +45,28 @@ declare type User = {
   full_name: string;
   verified?: boolean;
   email: string;
-  gender:string;
+  gender: string;
   profileImg?: {
+    url: string;
+  };
+  coverImg?: {
     url: string;
   };
   isActive: string[];
   friendRequests: string[];
   friends: string[];
   sendRequests: string[];
-  createdAt:Date;
-  updatedAt:Date;
-
+  createdAt: Date;
+  updatedAt: Date;
 };
 
-
-
 declare type UserQueryI = {
-  id:string
-}
+  id: string;
+  friendId?: string;
+};
 declare type UserQueryResponseI = {
-  user:User
-}
-
+  user: usersDiscoverd | User;
+};
 
 declare type UserAuth = {
   _id: string;
@@ -76,9 +74,10 @@ declare type UserAuth = {
   full_name: string;
   verified?: boolean;
   email: string;
-  profileImg?:string;
+  profileImg?: string;
+  friends?: string[];
+  coverImg?: string;
   accessToken: string;
-
   expiresAt: number | undefined;
   [key: string]: any;
 };
@@ -86,6 +85,8 @@ declare type UserAuth = {
 declare type discoverFriendI = {
   id: string;
   friendName: string;
+  gender?: string;
+  olderThan?: Date;
 };
 
 declare type handleFriendRequestI = {
@@ -111,11 +112,10 @@ declare type multipleQueriesIResponse = {
 };
 declare type reIssueAccessTokenProps = {
   id: string;
-
 };
 
 declare type RefreshTokenResponse = {
-  message:string;
+  message: string;
   sessionState: boolean;
 };
 
@@ -125,7 +125,7 @@ declare type ReissuseRefreshTokenResponseI = {
   full_name: string;
   verified?: boolean;
   email: string;
-  profileImg?:string
+  profileImg?: string;
   accessToken: string;
   expiresAt: number | undefined;
 };
@@ -139,12 +139,13 @@ declare type users = {
 declare type usersDiscoverd = {
   userId: string | null;
   sendRequestId: string | null;
+  friendRequest: string | null;
   user: User;
 };
 
 declare type ConversationUpdatingProps = {
   id: string;
-  content: string;
+  data: FormData;
   recipientId: string;
 };
 declare type ConversationQuery = {
@@ -185,7 +186,7 @@ declare interface ObjectType {
   };
 }
 
-declare type tone = "message" | "system";
+declare type tone = "message-send"  | "message-receive" | 'message-notification' | "system";
 
 declare type GroupMessageResponse = {
   userId: string;
@@ -199,4 +200,9 @@ declare type logoutProps = {
 
 declare type CheckSessionActiveStatus = {
   friendId: string;
+};
+
+declare type markAsSeen = {
+  id: string;
+  recipientId: string;
 };

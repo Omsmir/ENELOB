@@ -5,45 +5,57 @@ import { DashboardHook } from "../context/Dashboardprovider";
 import { Mutations } from "@/actions/mutations";
 import { useSession } from "../store/slices/AuthReducer";
 
-interface LogoutButtonProps {
+interface ReuseableEventButtonProps {
   className?: string;
+  title: string;
+  fire_description: {
+    title: string;
+    denied: string;
+    confirmed: string;
+    confirmTitle: string;
+  };
+  clickHandler: () => Promise<void>;
 }
 
-const LogoutButton = ({ className }: LogoutButtonProps) => {
+const ReuseableEventButton = ({
+  className,
+  fire_description,
+  title,
+  clickHandler,
+}: ReuseableEventButtonProps) => {
   const { setTheme, api } = DashboardHook();
-  const { session } = useSession();
   const logout = Mutations.useLogout(api);
 
-  const handelLogOut = async () => {
+  const handleEvent = async () => {
     try {
       Swal.fire({
-        title: "Do you want to logout?",
+        title: fire_description.title,
         showDenyButton: true,
         denyButtonText: "cancel",
         denyButtonColor: "#71717a",
         confirmButtonColor: "#b91c1c",
-        confirmButtonText: "logout",
+        confirmButtonText: fire_description.confirmTitle,
       }).then(async (result) => {
         if (result.isDenied) {
-          Swal.fire("Not logged out", "", "info");
+          Swal.fire(fire_description.denied, "", "info");
         } else if (result.isConfirmed) {
-          Swal.fire("Logged out", "", "success");
+          Swal.fire(fire_description.confirmed, "", "success");
 
-          await logout.mutateAsync({ id: session._id});
+          await clickHandler();
 
           setTheme("light");
         }
       });
     } catch (error: any) {
       console.error("Delete Error:", error);
-      alert("An error occurred while logging you out.");
+      alert("An error occurred while executing the event");
     }
   };
   return (
-    <Button className={className} onClick={handelLogOut}>
-      Sign Out
+    <Button className={className} onClick={handleEvent}>
+      {title}
     </Button>
   );
 };
 
-export default LogoutButton;
+export default ReuseableEventButton;

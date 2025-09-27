@@ -29,10 +29,17 @@ class UserService {
     };
 
     public findUser = async (query: FilterQuery<UserDocument>) => {
-        return await this.userModel.findOne(query)
+        const user = await this.userModel.findOne(query);
+
+        if (!user) return null;
+
+        return omit(user.toJSON(), 'password');
     };
     public getAllUsers = async (query?: FilterQuery<UserDocument>, limit?: number) => {
-        return await this.userModel.find(query ? query : {}).limit(limit || 10);
+        const users = await this.userModel.find(query ? query : {}).limit(limit || 10);
+        if (!users) return null;
+
+        return users.map((user) => omit(user.toJSON(), 'password'));
     };
     public deleteUser = async (query: FilterQuery<UserDocument>) => {
         return await this.userModel.findOneAndDelete(query);
@@ -54,15 +61,14 @@ class UserService {
             .sort({ _id: -1 })
             .limit(Number(limit) + 1);
 
+        const updatedUsers = users.map((user) => omit(user.toJSON(), 'password'));
         let nextCursor: string | null = null;
-        if (users.length > +limit) {
-            nextCursor = users[Number(limit) - 1]._id as string; // Use the last item's _id as the nextCursor
-            users.pop();
+        if (updatedUsers.length > +limit) {
+            nextCursor = updatedUsers[Number(limit) - 1]._id as string; // Use the last item's _id as the nextCursor
+            updatedUsers.pop();
         }
 
-        
-
-        return { users, nextCursor };
+        return { users: updatedUsers, nextCursor };
     };
 
     public updateUserSpecificList = async ({
@@ -90,7 +96,7 @@ class UserService {
             equal,
             addition,
         });
-        console.log(filiteredUserList)
+        console.log(filiteredUserList);
 
         const userUpdated = await this.updateUser(
             { _id: currUserArray._id },
@@ -109,7 +115,7 @@ class UserService {
     };
     public validatePassword = async ({ email, password }: { email: string; password: string }) => {
         try {
-            const user = await this.findUser({ email });
+            const user = await this.userModel.findOne({ email });
 
             if (!user) {
                 return false;

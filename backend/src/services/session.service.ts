@@ -56,6 +56,7 @@ class SessionService {
                 email: user.email,
                 full_name: user.full_name,
                 profileImg: user.profileImg,
+                coverImg: user.coverImg,
                 friends: user.friends,
                 session,
             },

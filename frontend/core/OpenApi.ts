@@ -81,9 +81,11 @@ OpenAPI.interceptors.response.use(async (response) => {
       _id: decoded?._id,
       full_name: decoded?.full_name,
       profileImg: decoded?.profileImg?.url || "",
+      coverImg: decoded?.coverImg?.url || "",
       verified: decoded?.verified,
       accessToken: accessToken,
       lastSeenAt: decoded.lastSeenAt,
+      friends: decoded?.friends,
     };
     store.dispatch(setUserSession(session));
   }
