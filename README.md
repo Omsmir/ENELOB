@@ -1,4 +1,5 @@
-![enelob]('/docs/banner.png')
+![ENELOB Banner](./docs/banner.png)
+
 
 # ENELOB — Chat App
 
