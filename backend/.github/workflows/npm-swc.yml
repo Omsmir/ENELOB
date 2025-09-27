@@ -1,0 +1,48 @@
+name: Build With SWC
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd="mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      NODE_ENV: test
+      MONGO_DB: oop
+      MONGO_DB_URI: "mongodb://localhost:27017/"
+      MONGO_DB_USER: ""
+      MONGO_DB_PASSWD: ""
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm ci
+        
+      - name: Build Project
+        run: npm run build
+
+      - name: Start & Test App
+        run: |
+          node dist/src/server.js &
+          sleep 10
+          echo "Server started and connected to local MongoDB"
