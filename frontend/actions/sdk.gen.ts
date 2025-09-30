@@ -1,5 +1,6 @@
 import { signIn } from "next-auth/react";
 import {
+  changeUserInfoI,
   CheckSessionActiveStatus,
   ConversationCreationResponseI,
   ConversationQuery,
@@ -269,6 +270,24 @@ export class Services {
       url: "/api/auth/reIssue/{id}",
       path: {
         id,
+      },
+    });
+  };
+
+  public static changeUserInfo = ({
+    id,
+    full_name,
+    gender,
+  }: changeUserInfoI): CancelablePromise<ResponseMessageI> => {
+    return request(OpenAPI, {
+      method: "PUT",
+      url: "/api/users/{id}/change",
+      path: {
+        id,
+      },
+      body: {
+        full_name,
+        gender,
       },
     });
   };

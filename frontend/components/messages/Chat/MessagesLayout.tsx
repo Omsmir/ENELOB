@@ -150,7 +150,7 @@ const MessagesLayout = () => {
       {scrollBottomState && (
         <span
           onClick={scrollBottom}
-          className="flex justify-center items-center fixed right-10 bottom-30 bg-white size-12 rounded-full cursor-pointer transition-colors hover:bg-slate-50 "
+          className="flex justify-center items-center fixed right-10 bottom-30 dark:bg-slate-900 bg-white size-12 rounded-full cursor-pointer transition-colors hover:bg-slate-50 "
         >
           <ArrowDown />
         </span>

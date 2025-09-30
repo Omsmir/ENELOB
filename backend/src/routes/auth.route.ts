@@ -4,6 +4,7 @@ import DeserializeMiddleware from '@/middlewares/deserializeUser';
 import upload from '@/middlewares/multer';
 import { validate } from '@/middlewares/validateResource';
 import {
+    changeUserInfoSchema,
     createUserSchema,
     deleteUserSchema,
     FriendsSchema,
@@ -90,6 +91,13 @@ class UserRoute implements routes {
             this.deserializerMiddlewares.requireLogin,
             validate(getUserSchema),
             this.userController.getUser
+        );
+        this.router.put(
+            `${this.path}/:id/change`,
+            this.deserializerMiddlewares.requireLogin,
+            upload.none(),
+            validate(changeUserInfoSchema),
+            this.userController.changeUserInfoHandler
         );
     }
 }

@@ -6,6 +6,7 @@ import { NotificationInstance } from "antd/es/notification/interface";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import {
+  changeUserInfoI,
   CheckSessionActiveStatus,
   ConversationUpdatingProps,
   handleFriendRequestI,
@@ -20,6 +21,7 @@ import {
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { useDispatch } from "react-redux";
 import { logout, setUserSession } from "@/components/store/slices/AuthReducer";
+import { MainLayoutHook } from "@/components/context/LayoutContext";
 export class Mutations {
   public static UseRegister = (api: NotificationInstance) => {
     const login = Mutations.useLogin(api, false);
@@ -184,6 +186,36 @@ export class Mutations {
             queryKey: [`conversation-${variables.recipientId}`],
           });
         }
+      },
+    });
+  };
+
+  public static useChangeUserInfo = (api: NotificationInstance) => {
+    const queryClient = useQueryClient();
+    const { setIsLoading } = MainLayoutHook();
+    return useMutation({
+      mutationFn: ({ id, full_name, gender }: changeUserInfoI) =>
+        Services.changeUserInfo({
+          id,
+          full_name,
+          gender,
+        }),
+      onMutate: () => {
+        setIsLoading(true);
+      },
+      onError: async (error) => {
+        setIsLoading(false);
+        HandleAxiosErrors({ api, error });
+      },
+      onSuccess: async (response, variables) => {
+        setIsLoading(false);
+        api.success({
+          description:'profile update',
+          message:response.message,
+        })
+        await queryClient.invalidateQueries({
+          queryKey: [`user-${variables.id}`],
+        });
       },
     });
   };

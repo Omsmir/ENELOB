@@ -3,6 +3,7 @@ import { BaseController } from './base.controller';
 import HttpException from '@/exceptions/httpException';
 import { Request, Response } from 'express';
 import {
+    changeUserInfoSchemaInterface,
     createUserSchemaInterface,
     FriendsSchemaInterface,
     getUserSchemaInterface,
@@ -104,6 +105,62 @@ class UserController extends BaseController {
 
             res.status(200).json({
                 message: 'you will be notified once the upload successfully complete',
+            });
+        } catch (error) {
+            this.handleError(res, error);
+        }
+    };
+
+    changeUserInfoHandler = async (
+        req: Request<
+            changeUserInfoSchemaInterface['params'],
+            {},
+            changeUserInfoSchemaInterface['body']
+        >,
+        res: Response
+    ) => {
+        try {
+            const id = res.locals.user._id;
+            const userId = req.params.id;
+            const gender = req.body.gender;
+            const full_name = req.body.full_name;
+            const changableObj: { full_name?: string; gender?: string } = {};
+
+            if (id !== userId) {
+                throw new HttpException(401, 'unauthorized operation');
+            }
+
+            if (!gender && !full_name) {
+                res.status(200).json({ message: 'nothing to be changed' });
+                return;
+            }
+
+            const existingUser = await this.userService.findUser({ _id: id });
+
+            if (!existingUser) {
+                throw new HttpException(404, 'user not found');
+            }
+
+            if (full_name) {
+                changableObj.full_name = full_name;
+            }
+
+            if (gender) {
+                changableObj.gender = gender;
+            }
+
+            await this.userService.updateUser({ _id: id }, changableObj, {
+                new: true,
+                runValidators: true,
+            });
+
+            const changedKeys: string[] = [];
+            Object.entries(changableObj).forEach(([key, value]) => {
+                changedKeys.push(key);
+            });
+
+            res.status(201).json({
+                message: `${changedKeys.map((key) => key).join(' and ')} ${changedKeys.length > 1 ? 'have' : 'has'} been changed`,
             });
         } catch (error) {
             this.handleError(res, error);

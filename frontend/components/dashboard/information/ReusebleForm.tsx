@@ -5,9 +5,10 @@ import { Form } from "@/components/ui/form";
 import SubmitButton from "@/components/togglers/SubmitButton";
 import { AccountSchema } from "@/lib/vaildation";
 import { DashboardHook } from "@/components/context/Dashboardprovider";
-import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { MainLayoutHook } from "@/components/context/LayoutContext";
+import { Mutations } from "@/actions/mutations";
+import { useSession } from "@/components/store/slices/AuthReducer";
 
 interface ReusebleFormDataProps {
   children: React.ReactNode;
@@ -23,26 +24,28 @@ const ReusebleForm = ({
 }: ReusebleFormDataProps) => {
   const { isLoading, form } = MainLayoutHook();
   const { api } = DashboardHook();
-
+  const { session } = useSession();
   const handleEdit = () => {
     setEditState(false);
   };
 
+  const updateUser = Mutations.useChangeUserInfo(api);
+  const updateSession = Mutations.useReissueAccessToken(api)
   const onSubmit = (values: z.infer<typeof AccountSchema>) => {
-    const formData = new FormData();
-
     const data = {
-      name: values.name,
+      id: session._id,
+      full_name: values.full_name === session.full_name ? undefined : values.full_name,
       gender: values.gender,
     };
 
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        formData.append(key, value as string);
-      }
-    });
     try {
-      // updateUser.mutate(formData);
+      updateUser.mutate(data, {
+        onSuccess: async () => {
+          setEditState(false)
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          await updateSession.mutateAsync({id:session._id})
+        },
+      });
     } catch (error: any) {
       console.log(`error from Account profile: ${error.message}`);
     }

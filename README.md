@@ -1,7 +1,9 @@
 ![ENELOB Banner](./docs/banner.png)
 
+[![Version](https://img.shields.io/badge/version-1.1-blue.svg)](https://github.com/omsmir/ENELOB)
+[![Coverage](https://img.shields.io/badge/coverage-60%25-yellow.svg)](https://github.com/omsmir/ENELOB/actions)
 
-# ENELOB — Chat App
+# ENELOB — Chats
 
 **ENELOB** is a production-minded one-to-one chat application designed for reliability, low-latency UX, and scale.  
 This document describes the full feature set (end-user and technical), the user flows starting from dashboard routes, the message & presence lifecycle, the asynchronous file-upload strategy using BullMQ + Redis, storage and persistence model, and deployment considerations (NGINX + Docker Compose).  

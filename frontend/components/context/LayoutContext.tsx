@@ -55,7 +55,7 @@ export const MainLayoutProvider = ({
   const form = useForm<z.infer<typeof AccountSchema>>({
     resolver: zodResolver(AccountSchema),
     defaultValues: {
-      name: session.full_name as string,
+      full_name: session.full_name as string,
     },
   });
   return (
