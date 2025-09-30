@@ -56,7 +56,7 @@ const FieldEnumeration = ({ name, placeHolder, form, label, Array }: FieldEnumer
                 <CustomFormField
                     fieldType={FormFieldType.INPUT}
                     control={form.control}
-                    name="name"
+                    name="full_name"
                     placeholder={placeHolder}
                     className="max-h-[25px] w-32 overflow-hidden rounded-sm"
                 />

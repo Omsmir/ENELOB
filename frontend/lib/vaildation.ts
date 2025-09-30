@@ -162,6 +162,6 @@ export const VerifyOtp = z.object({
 });
 
 export const AccountSchema = z.object({
-  name: z.string().optional(),
+  full_name: z.string().optional(),
   gender: z.string().optional(),
 });

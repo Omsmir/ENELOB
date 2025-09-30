@@ -109,6 +109,13 @@ const getUsersPayload = {
     }),
 };
 
+const changeUserInfoPayload = {
+    body:z.object({
+        full_name:z.string().optional(),
+        gender:z.enum(genders as [string,...string[]]).optional()
+    })
+}
+
 export const createUserSchema = z.object({
     ...payload,
 });
@@ -150,6 +157,11 @@ export const getUserSchema = z.object({
     ...friendQuery,
 });
 
+export const changeUserInfoSchema = z.object({
+    ...params,
+    ...changeUserInfoPayload
+})
+
 export type createUserSchemaInterface = z.infer<typeof createUserSchema>;
 export type deleteUserSchemaInterface = z.infer<typeof deleteUserSchema>;
 export type updateUserSchemaInterface = z.infer<typeof updateUserSchema>;
@@ -160,3 +172,4 @@ export type MultipleQueriesSchemaInterface = z.infer<typeof multipleQueriesSchem
 export type getUsersSchemaInterface = z.infer<typeof getUsersSchema>;
 
 export type getUserSchemaInterface = z.infer<typeof getUserSchema>;
+export type changeUserInfoSchemaInterface = z.infer<typeof changeUserInfoSchema>;

@@ -206,3 +206,10 @@ declare type markAsSeen = {
   id: string;
   recipientId: string;
 };
+
+
+declare type changeUserInfoI = {
+  full_name?:string;
+  gender?:string
+  id:string
+}
