@@ -1,9 +1,8 @@
 "use client";
-
 import { Queries } from "@/actions/queries";
 import Spinner from "@/components/Spinner";
 import { useSession } from "@/components/store/slices/AuthReducer";
-import Profile from "./Profile";
+import FriendProfile from "./FriendProfile";
 import {
   MotionComponent,
   Motions,
@@ -29,7 +28,7 @@ const FriendLayout = ({ id }: { id: string }) => {
             </div>
           ) : (
             data &&
-            data.user && <Profile friend={data.user as usersDiscoverd} />
+            data.user && <FriendProfile friend={data.user as usersDiscoverd} />
           )}
         </IntrinsicSettingLayout>
       </div>

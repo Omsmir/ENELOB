@@ -1,12 +1,10 @@
 import UserController from '@/controllers/auth.controller';
-import { routes } from '@/interfaces/routes.interface';
 import DeserializeMiddleware from '@/middlewares/deserializeUser';
 import upload from '@/middlewares/multer';
 import { validate } from '@/middlewares/validateResource';
 import {
     changeUserInfoSchema,
     createUserSchema,
-    deleteUserSchema,
     FriendsSchema,
     getUserSchema,
     handleFriendRequestsSchema,
@@ -14,25 +12,18 @@ import {
     SendFriendRequestSchema,
     updateUserSchema,
 } from '@/schemas/auth.schema';
-import { Router } from 'express';
+import BaseRoute from './base.route';
 
-// SOLID principles interpreted
-
-// All the route Class is a single responsability
-// interface segregation && liskov substitbution
-class UserRoute implements routes {
-    public path = '/users';
-    public router = Router();
-    private deserializerMiddlewares: DeserializeMiddleware;
-
-    // dependency injection: composition over inheritance
-    constructor(private userController: UserController) {
-        this.deserializerMiddlewares = new DeserializeMiddleware();
-
-        this.initializeRoute();
+class UserRoute extends BaseRoute {
+    constructor(
+        private readonly userController: UserController,
+        private readonly deserializerMiddlewares: DeserializeMiddleware
+    ) {
+        super('/users');
+        this.initializeRoutes();
     }
 
-    private initializeRoute() {
+    public initializeRoutes() {
         this.router.use(this.deserializerMiddlewares.checkStatus);
         this.router.post(
             `${this.path}`,

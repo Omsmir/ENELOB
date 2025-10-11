@@ -45,7 +45,6 @@ const RenderSkeleton = ({ props }: { props: CustomSkeletonProps }) => {
       clearTimeout(timeout);
     };
   }, [props.loading]);
-  console.log(props.loading);
   switch (props.SkeletonType) {
     case SkeletonType.HEAD:
       return (

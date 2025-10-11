@@ -11,7 +11,6 @@ import {
 import { createContext, useContext, useState } from "react";
 import { notification } from "antd";
 import { NotificationInstance } from "antd/es/notification/interface";
-
 import { io, Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { User } from "@/types";
@@ -19,7 +18,6 @@ import { socketEventTypes, SocketListener } from "@/lib/utils";
 import {
   addUser,
   removeUser,
-  updateLastSeen,
 } from "../store/slices/usersReducer";
 import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "next-themes";
@@ -27,6 +25,7 @@ import { RootState } from "../store/store";
 import { useSession } from "../store/slices/AuthReducer";
 import { Mutations } from "@/actions/mutations";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { JoinSocketController } from "@/lib/socket";
 
 interface DashboardContextProps {
   api: NotificationInstance;
@@ -109,20 +108,28 @@ export const DashboardProvider = ({
     dispatch(removeUser(id));
   };
   // 👇 initialize socket only when session is ready
+  const SocketContructor = new JoinSocketController(session);
+
   useEffect(() => {
     const token = session.accessToken;
     if (!token) return;
 
     if (!socketRef.current) {
-      socketRef.current = io("http://localhost:8090", {
-        auth: { token },
-        withCredentials: true,
-        autoConnect: true,
-        reconnection: true,
-      });
+      socketRef.current = io(
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8090",
+        {
+          auth: { token },
+          withCredentials: true,
+          autoConnect: true,
+          reconnection: true,
+        }
+      );
+      setSocket(socketRef.current);
 
       socketRef.current.on("connect", () => {
         console.log("✅ Socket connected:", socketRef.current?.id);
+        if (socketRef.current)
+          SocketContructor.initializeEventHandlers(socketRef.current);
       });
 
       SocketListener({
@@ -145,9 +152,9 @@ export const DashboardProvider = ({
 
       socketRef.current.on("disconnect", () => {
         console.log("❌ Socket disconnected");
+        if (socketRef.current)
+          SocketContructor.leaveSocketHandler(socketRef.current); // needs refactoring, no emition on disconnection
       });
-
-      setSocket(socketRef.current);
     }
 
     return () => {

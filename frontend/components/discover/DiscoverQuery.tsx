@@ -10,10 +10,9 @@ import SubmitButton from "../togglers/SubmitButton";
 import { discoverSchema } from "@/lib/vaildation";
 import { DashboardHook } from "../context/Dashboardprovider";
 import { Input } from "../ui/input";
-import { User } from "@/types";
 import { useDebounce } from "../Debounce";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
-import CardsLayout from "./CardsLayout";
+import MainLayout from "./MainLayout";
 import { Queries } from "@/actions/queries";
 import { genders } from "@/lib/constants";
 import { SelectItem } from "../ui/select";
@@ -24,9 +23,9 @@ const DiscoverQuery = () => {
   const debouncedData = useDebounce(value, 500);
   const [isActive, setIsActive] = useState<"general" | "filtered">("filtered");
   const [filiteredUserObject, setFilteredUserObject] = useState<
-    { friendName: string; olderThan: Date; gender: string } | {}
-  >({});
-  const { contextHolder, isLoading } = DashboardHook();
+    { friendName: string; olderThan?: Date; gender?: string } | undefined
+  >(undefined);
+  const { isLoading } = DashboardHook();
   const { session } = useSession();
 
   const { data, isFetching, error, isError } = Queries.UseDiscoverFriends({
@@ -51,13 +50,12 @@ const DiscoverQuery = () => {
 
   useEffect(() => {
     return () => {
-      setFilteredUserObject({});
-    }
-  },[isActive])
+      setFilteredUserObject(undefined);
+    };
+  }, [isActive]);
 
   return (
     <Form {...form}>
-      {contextHolder}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col lg:grid grid-cols-12 w-full"
@@ -158,8 +156,7 @@ const DiscoverQuery = () => {
             )}
           </div>
         </div>
-
-        <CardsLayout
+        <MainLayout
           users={data}
           isFetching={isFetching}
           error={error}

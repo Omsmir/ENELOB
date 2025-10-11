@@ -14,7 +14,15 @@ import { notificationSounds } from "./constants";
 import * as Tone from "tone";
 import { Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
-import { differenceInMinutes } from "date-fns";
+import {
+  differenceInHours,
+  differenceInMinutes,
+  differenceInSeconds,
+  format,
+  isBefore,
+  isToday,
+  isYesterday,
+} from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -54,10 +62,6 @@ export const ChangeJsxToString = ({
 export const groupMessages = (
   messages: Message[]
 ): GroupMessageResponse | [] => {
-  // const sorted = [...messages].sort(
-  //   (a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
-  // );
-
   const groups: {
     index: string;
     userId: string;
@@ -117,7 +121,6 @@ type SocketListenerProps = {
     value: React.SetStateAction<ConversationUpatingResponseI[] | undefined>
   ) => void;
   setUser?: (id: string) => void;
-  socketEvent?: string;
   eventValue: socketEventTypes;
   container?: React.RefObject<HTMLDivElement | null>;
   conversationId?: string | undefined;
@@ -127,7 +130,6 @@ type SocketListenerProps = {
 export const SocketListener = ({
   socket,
   setMessages,
-  socketEvent,
   eventValue,
   setUser,
   container,
@@ -163,7 +165,6 @@ export const SocketListener = ({
 
             if (conversationId && conversationId === data.message.userId) {
               // conversation is opened
-              console.log("same conversation");
               if (setUser) {
                 setUser(data.message.userId);
               }
@@ -214,7 +215,6 @@ export const SocketListener = ({
       socket.on(
         `${socketEventTypes.MARK_AS_SEEN}`,
         (data: { recipientId: string }) => {
-          console.log("recipient from seen message", data.recipientId);
           if (setMessages) {
             setMessages((prev) => {
               if (!prev || prev.length === 0) {
@@ -234,8 +234,6 @@ export const SocketListener = ({
                   msg.userId === data.recipientId ? { ...msg, seen: true } : msg
                 ),
               }));
-
-              console.log("updated from listen", updated);
 
               return updated;
             });
@@ -267,4 +265,31 @@ export const getImageSize = async (
   const height = bitmap.height;
   bitmap.close();
   return { width, height };
+};
+
+export const switchOnActiveTimes = (lastSeen: Date): string => {
+  const currDate = new Date();
+  if (Math.abs(differenceInHours(currDate, lastSeen)) < 1) {
+    const differenceOfSeconds = differenceInSeconds(currDate, lastSeen);
+    const differenceOfMintues = differenceInMinutes(currDate, lastSeen);
+
+    if (
+      (!differenceOfMintues || differenceOfMintues < 1) &&
+      differenceOfSeconds
+    ) {
+      return `${differenceOfSeconds} seconds ago`;
+    } else {
+      return `${differenceOfMintues} min ago`;
+    }
+  } else if (
+    isToday(lastSeen) &&
+    Math.abs(differenceInHours(currDate, lastSeen)) >= 1
+  ) {
+    const differenceOfHours = Math.abs(differenceInHours(currDate, lastSeen));
+    return `${differenceOfHours} hours ago`;
+  } else if (isYesterday(lastSeen)) {
+    return "yesterday";
+  } else {
+    return format(lastSeen, "Pp");
+  }
 };

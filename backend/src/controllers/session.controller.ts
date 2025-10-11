@@ -9,23 +9,18 @@ import {
     LoginSchemaInterface,
     SessionReissueSchemaInterface,
 } from '@/schemas/session.schema';
-import { signJwt, verifyJwt } from '@/utils/jwt.sign';
+import { signJwt } from '@/utils/jwt.sign';
 import { ACCESSTOKENTTL, REFRESHTOKENTTL } from '@/config/defaults';
-import { get } from 'lodash';
-import { UserDocument } from '@/models/auth.model';
-import { addHours } from 'date-fns';
-import App from '@/app';
-import { RedisConnection, RedisServices } from '@/utils/redis';
+import {  RedisServices } from '@/utils/redis';
+import { io } from '@/server';
 
 class SessionController extends BaseController {
-    private sessionService: SessionService;
-    private userService: UserService;
-    private redisService: RedisServices;
-    constructor() {
+    constructor(
+        private readonly sessionService: SessionService,
+        private readonly userService: UserService,
+        private readonly redisService:RedisServices
+    ) {
         super();
-        this.sessionService = new SessionService();
-        this.userService = new UserService();
-        this.redisService = new RedisServices(RedisConnection.getInstance().getClient());
     }
     public loginHandler = async (
         req: Request<{}, {}, LoginSchemaInterface['body']>,
@@ -34,7 +29,6 @@ class SessionController extends BaseController {
         try {
             const email = req.body.email;
             const password = req.body.password;
-            const io = App.initiator;
 
             const user = await this.userService.validatePassword({ email, password });
 
@@ -135,7 +129,6 @@ class SessionController extends BaseController {
         try {
             const id = req.params.id;
             const userId = res.locals.user._id as string;
-            const io = App.initiator;
 
             if (id !== userId) {
                 throw new HttpException(401, 'unauthorized operation');
@@ -162,7 +155,7 @@ class SessionController extends BaseController {
 
             const HashName = `user:${user._id}`;
 
-            await this.redisService.DelHash(`${HashName}:online-status`,'status');
+            await this.redisService.DelHash(`${HashName}:online-status`, 'status');
 
             await this.sessionService.updateSession(
                 { user: id, valid: true },
@@ -194,7 +187,6 @@ class SessionController extends BaseController {
             const id = req.query.friendId;
 
             const user = await this.userService.findUser({ _id: id });
-            const io = App.initiator;
 
             if (!user) {
                 throw new HttpException(404, 'Error getting user session');

@@ -1,12 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import CustomSkeleton, { SkeletonType } from "@/components/CustomSkeleton";
-import { useSession } from "@/components/store/slices/AuthReducer";
-
 import { usersDiscoverd } from "@/types";
-import Events from "./Events";
+import FriendControllersLayout from "./FriendControllersLayout";
 
-const Profile = ({ friend }: { friend: usersDiscoverd }) => {
+const FriendProfile = ({ friend }: { friend: usersDiscoverd }) => {
   const [loading, setLoading] = useState(true);
   const [updatedFriend, setUpdatedFriend] = useState<usersDiscoverd>(friend);
 
@@ -45,7 +43,7 @@ const Profile = ({ friend }: { friend: usersDiscoverd }) => {
         </div>
       </div>
 
-      <Events
+      <FriendControllersLayout
         updatedFriend={updatedFriend}
         setUpdatedFriend={setUpdatedFriend}
       />
@@ -53,4 +51,4 @@ const Profile = ({ friend }: { friend: usersDiscoverd }) => {
   );
 };
 
-export default Profile;
+export default FriendProfile;

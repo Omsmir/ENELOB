@@ -2,24 +2,23 @@
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import "overlayscrollbars/overlayscrollbars.css";
 import React, { useEffect, useState } from "react";
-import SingleCard from "./SingleCard";
+import SingleCardLayout from "./singleCard/SingleCardLayout";
 import { users } from "@/types";
-
 import Spinner from "../Spinner";
 
-type CardsLayoutProps = {
+type MainLayoutProps = {
   users?: users;
   isFetching: boolean;
   error: Error | null;
   isError: boolean;
 };
 
-const CardsLayout = ({
+const MainLayout = ({
   users,
   isFetching,
   error,
   isError,
-}: CardsLayoutProps) => {
+}: MainLayoutProps) => {
   const [updatedUsers, setUpdatedUsers] = useState<users | undefined>(users);
 
   useEffect(() => {
@@ -41,7 +40,7 @@ const CardsLayout = ({
           </div>
         ) : updatedUsers && updatedUsers.length > 0 ? (
           updatedUsers.map((user, index) => (
-            <SingleCard
+            <SingleCardLayout
               setUpdatedUsers={setUpdatedUsers}
               payload={user}
               key={index}
@@ -57,4 +56,4 @@ const CardsLayout = ({
   );
 };
 
-export default CardsLayout;
+export default MainLayout;

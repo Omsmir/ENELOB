@@ -30,6 +30,7 @@ export const {
     FRONTEND_URI,
     REDIS_PWD,
     REDIS_DEV_URI,
+    FRONTEND_DEV_URI,
 } = process.env;
 
 export default {

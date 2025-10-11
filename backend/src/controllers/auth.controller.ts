@@ -20,14 +20,12 @@ import { reqFileProps } from '@/interfaces/global.interface';
 import BullWorkers from '@/utils/workers';
 
 class UserController extends BaseController {
-    private userService: UserService;
-    private invoker: CommandInvoker;
-    private queue: BullWorkers;
-    constructor() {
+    constructor(
+        private readonly userService: UserService,
+        private readonly invoker: CommandInvoker, //command behavoiral pattern invoker
+        private readonly queue: BullWorkers
+    ) {
         super();
-        this.userService = new UserService();
-        this.invoker = new CommandInvoker(); // command behavoiral pattern invoker
-        this.queue = new BullWorkers();
     }
 
     public createUserHandler = async (
@@ -375,10 +373,6 @@ class UserController extends BaseController {
 
             const otherUserSentRequests = existingFriend.sendRequests.filter(
                 (request) => request === id
-            );
-
-            const currUserSentRequests = existingUser.sendRequests.filter(
-                (request) => request === friendRequest
             );
 
             const currFriends = existingUser.friends.filter((request) => request === friendRequest);
