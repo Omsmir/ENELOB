@@ -1,15 +1,15 @@
 import React from "react";
-import { MotionComponent, Motions } from "../relatedComponents/Motion";
+import { MotionComponent, Motions } from "../../relatedComponents/Motion";
 import { User } from "@/types";
-import { DashboardHook } from "../context/Dashboardprovider";
+import { DashboardHook } from "../../context/Dashboardprovider";
 import { useQueryClient } from "@tanstack/react-query";
 import { Mutations } from "@/actions/mutations";
-import { format } from "date-fns";
-import BadgeAvatar from "../Avatar";
-import { useSession } from "../store/slices/AuthReducer";
+import BadgeAvatar from "../../Avatar";
+import { useSession } from "../../store/slices/AuthReducer";
 import { useDispatch } from "react-redux";
-import { updateConversationId } from "../store/slices/usersReducer";
+import { updateConversationId } from "../../store/slices/usersReducer";
 import { Badge } from "antd";
+import { switchOnActiveTimes } from "@/lib/utils";
 
 interface SingleChatProps {
   friend: User;
@@ -22,7 +22,7 @@ const SingleChat = ({ friend }: SingleChatProps) => {
   const queryClient = useQueryClient();
   const checkActiveSession = Mutations.useCheckSession(api);
   const markAsSeen = Mutations.useMarkAsSeen(api);
-  
+
   const handleChatOpen = async () => {
     setFriend(friend);
     dispatch(updateConversationId(friend._id));
@@ -34,7 +34,7 @@ const SingleChat = ({ friend }: SingleChatProps) => {
   const ActiveToggleComponent = () => {
     return (
       <div className="flex">
-        <p className="text-sm text-slate-500">last message</p>
+        <p className="text-sm text-slate-500">last seen</p>
       </div>
     );
   };
@@ -62,7 +62,7 @@ const SingleChat = ({ friend }: SingleChatProps) => {
           <h1 className="font-medium lowercase text-slate-400 text-sm">
             {isActive(friend._id)
               ? "online"
-              : format(new Date(friend.lastSeenAt), "Pp")}
+              : switchOnActiveTimes(friend.lastSeenAt)}
           </h1>
         </div>
       </div>

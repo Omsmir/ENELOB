@@ -47,7 +47,6 @@ const LoginForm = () => {
 
   return (
     <Form {...form}>
-      {contextHolder}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-8 my-auto px-4 sm:p-0 sm:mx-4"

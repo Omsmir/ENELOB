@@ -1,5 +1,4 @@
 import ConversationController from '@/controllers/conversation.controller';
-import { routes } from '@/interfaces/routes.interface';
 import DeserializeMiddleware from '@/middlewares/deserializeUser';
 import upload from '@/middlewares/multer';
 import { validate } from '@/middlewares/validateResource';
@@ -9,18 +8,18 @@ import {
     getConversationSchema,
     MarkAsSeenSchema,
 } from '@/schemas/conversation.schema';
-import { json } from 'body-parser';
-import { Request, Response, Router } from 'express';
+import BaseRoute from './base.route';
 
-class ConversationRoute implements routes {
-    public path = '/conversations';
-    public router = Router();
-    private deserializerMiddlewares = new DeserializeMiddleware();
-    constructor(private conversationController: ConversationController) {
-        this.initializeRoute();
+class ConversationRoute extends BaseRoute {
+    constructor(
+        private readonly conversationController: ConversationController,
+        private readonly deserializerMiddlewares: DeserializeMiddleware
+    ) {
+        super('/conversations');
+        this.initializeRoutes();
     }
 
-    private initializeRoute() {
+    public initializeRoutes() {
         this.router.use(this.deserializerMiddlewares.checkStatus);
 
         this.router.get(

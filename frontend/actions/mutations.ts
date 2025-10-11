@@ -90,8 +90,6 @@ export class Mutations {
 
         dispatch(setUserSession(session));
 
-        console.log(response);
-
         if (loginState) {
           Swal.fire({
             position: "center",
@@ -103,6 +101,7 @@ export class Mutations {
         }
 
         router.push("/dashboard");
+        
         setIsLoading(false);
       },
     });

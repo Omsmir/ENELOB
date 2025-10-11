@@ -1,7 +1,6 @@
-import { BODYSIZELIMIT, LOG_FORMAT, NODE_ENV, ORIGIN, PORT } from './config/defaults';
+import { BODYSIZELIMIT, FRONTEND_DEV_URI, LOG_FORMAT, NODE_ENV, PORT } from './config/defaults';
 import express from 'express';
 import MongoConnection from './utils/MongoConnection';
-import { routes } from '@/interfaces/routes.interface';
 import morgan from 'morgan';
 import { logger, stream } from './utils/logger';
 import cors from 'cors';
@@ -12,13 +11,15 @@ import cookieParser from 'cookie-parser';
 import { ErrorHandler } from './middlewares/error.middleware';
 import http from 'http';
 import { sanitizeRequest } from './middlewares/xss';
-
-import DeserializeMiddleware from './middlewares/deserializeUser';
+import { DeserializeUser } from './middlewares/deserializeUser';
 import { developedBy, ENELOB, SIGNALS } from './utils/constants';
 import { gracefulShutdown } from './utils/gracefulEvents';
-import SocketServer from './utils/socketServer';
+import SocketServer from './socket/socketServer';
 import { Server } from 'socket.io';
 import { RedisConnection } from './utils/redis';
+import BaseRoute from './routes/base.route';
+import SessionService from './services/session.service';
+import SocketBaseController from './socket/base.controller';
 
 class App {
     public PORT: string | number;
@@ -26,18 +27,23 @@ class App {
     public app: express.Application;
     public server: http.Server;
     public mongoConnection: MongoConnection;
-    public static initiator: Server;
+    public initiator: Server;
     public redisConnection: RedisConnection;
-    private deserializerMiddlewares: DeserializeMiddleware;
-    constructor(routes: routes[]) {
+    private socketServer: SocketServer;
+    private deserializeUser: DeserializeUser;
+    constructor(
+        private readonly routes: BaseRoute[],
+        private readonly socketControllers: SocketBaseController[]
+    ) {
         this.PORT = PORT || 8090;
         this.env = NODE_ENV || 'development';
         this.app = express();
         this.server = http.createServer(this.app);
-        this.deserializerMiddlewares = new DeserializeMiddleware();
         this.mongoConnection = MongoConnection.getInstance();
         this.redisConnection = RedisConnection.getInstance();
-        App.initiator = SocketServer.io(this.server);
+        this.socketServer = SocketServer.getInstance(this.server, this.socketControllers);
+        this.initiator = this.socketServer.io;
+        this.deserializeUser = new DeserializeUser(new SessionService());
 
         this.socketInitialize();
 
@@ -59,11 +65,11 @@ class App {
     }
 
     private async socketInitialize() {
-        SocketServer.SocketInitiator(App.initiator);
+        this.socketServer.SocketInitiator(this.initiator);
     }
 
-    private initializeRoutes(routes: routes[]) {
-        routes.forEach((route: routes) => {
+    private initializeRoutes(routes: BaseRoute[]) {
+        routes.forEach((route: BaseRoute) => {
             this.app.use('/api', route.router);
         });
     }
@@ -72,7 +78,7 @@ class App {
         this.app.use(morgan(LOG_FORMAT || 'dev', { stream }));
         this.app.use(
             cors({
-                origin: 'http://localhost:3000',
+                origin: FRONTEND_DEV_URI,
                 credentials: true,
                 exposedHeaders: ['Authorization'],
             })
@@ -87,14 +93,14 @@ class App {
     }
 
     private async initializeDeserializers() {
-        this.app.use(this.deserializerMiddlewares.deserializeUser);
+        this.app.use(this.deserializeUser.deserializeUser);
     }
     private initializeErrorMiddlewares() {
         this.app.use(ErrorHandler);
     }
 
-    static createInstance(routes: routes[]): App {
-        return new App(routes);
+    static createInstance(routes: BaseRoute[], socketControllers: SocketBaseController[]): App {
+        return new App(routes, socketControllers);
     }
 
     public getServer() {

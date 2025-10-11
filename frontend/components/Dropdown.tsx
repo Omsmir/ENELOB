@@ -10,15 +10,16 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+export type item<T> = {
+  innerText?: string;
+  disabled?: boolean;
+  onclick?: (value: T) => void;
+  children?: React.ReactNode;
+  className?: string;
+};
 export interface DropdownProps<T> {
   className?: string;
-  items: {
-    innerText?: string;
-    disabled?: boolean;
-    onclick?: (value: T) => void;
-    children?: React.ReactNode;
-    className?: string;
-  }[];
+  items: item<T>[];
 }
 
 const Dropdown = ({ items, className }: DropdownProps<any>) => {

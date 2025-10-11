@@ -1,5 +1,4 @@
 import SessionController from '@/controllers/session.controller';
-import { routes } from '@/interfaces/routes.interface';
 import DeserializeMiddleware from '@/middlewares/deserializeUser';
 import upload from '@/middlewares/multer';
 import { validate } from '@/middlewares/validateResource';
@@ -9,24 +8,18 @@ import {
     loginSchema,
     SessionReissueSchema,
 } from '@/schemas/session.schema';
-import { Router } from 'express';
+import BaseRoute from './base.route';
 
-// SOLID principles interpreted
-
-// All the route Class is a single responsability
-// interface segregation && liskov substitbution
-class SessionRoute implements routes {
-    public path = '/auth';
-    public router = Router();
-    // dependency injection: composition over inheritance
-    private deserializerMiddlewares: DeserializeMiddleware;
-
-    constructor(private sessionController: SessionController) {
-        this.deserializerMiddlewares = new DeserializeMiddleware();
-        this.initializeRoute();
+class SessionRoute extends BaseRoute {
+    constructor(
+        private readonly sessionController: SessionController,
+        private readonly deserializerMiddlewares: DeserializeMiddleware
+    ) {
+        super('/auth');
+        this.initializeRoutes();
     }
 
-    private initializeRoute() {
+    public initializeRoutes() {
         this.router.post(
             `${this.path}/login`,
             upload.none(),

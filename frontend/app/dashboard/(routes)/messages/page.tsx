@@ -1,6 +1,5 @@
 "use client"
-import ChatLayout from "@/components/messages/ChatLayout";
-import { useSession } from "next-auth/react";
+import ChatLayout from "@/components/chatLayout/ChatLayout";
 import React from "react";
 
 const page =  () => {

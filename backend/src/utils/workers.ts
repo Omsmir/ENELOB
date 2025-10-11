@@ -5,8 +5,8 @@ import { logger } from './logger';
 import { uploadImageToFirebase } from './getPresignedUrl';
 import UserService from '@/services/auth.service';
 import { BufferEncoding, getImagesBuffer } from './utils';
-import App from '@/app';
 import { RedisConnection, RedisServices } from './redis';
+import { io } from '@/server';
 
 export type CreateWorkerProps = {
     name: string;
@@ -53,15 +53,12 @@ class BullWorkers {
         });
 
         worker.on('completed', (job, result) => {
-            const io = App.initiator;
-
             switch (result.type) {
                 case 'profileUpdate':
                     const userId = result.userId as string;
                     io.to(userId).emit('ImageUpdated', { userId });
                     break;
                 case 'check-online-status':
-                    console.log(result.type);
                     break;
                 default:
                     logger.error('invalid or unknown bull result type');
@@ -95,7 +92,6 @@ worker.createWorker('check-online-status', async (job) => {
     try {
         const userService = new UserService();
         const redisServices = new RedisServices(RedisConnection.getInstance().getClient());
-        const io = App.initiator;
 
         const user = await userService.findUser({ _id: userId });
 
@@ -139,7 +135,6 @@ worker.createWorker('check-online-status', async (job) => {
                         lastRequestHashName,
                         'lastRequest'
                     );
-                    console.log(lastRequest)
                     await userService.updateUser(
                         { _id: friend },
                         { lastSeenAt: new Date(lastRequest as string) },

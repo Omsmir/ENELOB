@@ -12,9 +12,6 @@ import CustomFileUploader, { FileUploaderType } from "../CustomFileUploader";
 import CustomSkeleton, { SkeletonType } from "../CustomSkeleton";
 import { Mutations } from "@/actions/mutations";
 import { useSession } from "../store/slices/AuthReducer";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import Image from "next/image";
 import { MainLayoutHook } from "../context/LayoutContext";
 
 const ProfilePicture = () => {
@@ -23,10 +20,6 @@ const ProfilePicture = () => {
     MainLayoutHook();
   const [loading, setLoading] = useState(true);
   const [buttonState, setButtonState] = useState(true);
-
-  const conversationId = useSelector(
-    (state: RootState) => state.users.conversationId
-  );
   const { session } = useSession();
 
   const changePicture = Mutations.useUpdateProfilePicture(api);
@@ -54,9 +47,7 @@ const ProfilePicture = () => {
         { id: session._id, profileImg: formData },
         {
           onSuccess: async () => {
-            // updateSession.mutateAsync({ id: session._id });
             setFilesLength(0);
-
             setTimeout(() => {
               form.reset();
               setPreviewCover(undefined);
@@ -172,7 +163,7 @@ const ProfilePicture = () => {
             isLoading={isLoading}
             disabled={buttonState || isLoading}
             disabledText="change"
-            innerText=" " // importtant
+            innerText=" " // important
           >
             change
           </SubmitButton>

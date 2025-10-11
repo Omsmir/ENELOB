@@ -133,6 +133,7 @@
     border-radius: 0px;
   }
 
+  
   .remove-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
@@ -219,3 +220,11 @@ pre.shiki {
   color: gray;
   border: none;
 }
+
+.reusable_button {
+    cursor: pointer;
+    text-transform: capitalize;
+    flex-grow: 1;
+    width: 120px;
+    max-width: 200px;
+  }

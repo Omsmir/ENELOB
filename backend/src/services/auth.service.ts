@@ -1,18 +1,14 @@
-import { FilterQuery, QueryOptions, SchemaTypeOptions, UpdateQuery } from 'mongoose';
+import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 import UserModel, { UserDocument } from '@/models/auth.model';
 import { omit } from 'lodash';
-import { UserInput, userToCreate } from '@/interfaces/models.interface';
+import { userToCreate } from '@/interfaces/models.interface';
 
 import bcrypt from 'bcryptjs';
 import { filterStringsArray } from '@/utils/utils';
 import { MultipleFilteringService } from '@/interfaces/global.interface';
 
-// SOLID principles interpreted
-
-// All the route Class is a single responsability
 class UserService {
-    // dependency injection: composition over inheritance
-    constructor(private userModel = UserModel) {}
+    constructor(private  userModel = UserModel) {}
 
     public createUser = async (input: userToCreate) => {
         const user = await this.userModel.create(input);

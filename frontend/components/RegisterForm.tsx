@@ -52,7 +52,6 @@ const RegisterForm = () => {
 
   return (
     <Form {...form}>
-      {contextHolder}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex-1 space-y-12"

@@ -134,6 +134,7 @@ declare type users = {
   userId: string | null;
   sendRequestId: string | null;
   user: User;
+  friendRequest:string | null
 }[];
 
 declare type usersDiscoverd = {

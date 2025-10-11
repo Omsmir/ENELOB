@@ -2,7 +2,6 @@ import ConversationService from '@/services/conversation.service';
 import { BaseController } from './base.controller';
 import UserService from '@/services/auth.service';
 import { Request, Response } from 'express';
-import App from '@/app';
 import {
     createConversationSchemaInterface,
     deleteConversationSchemaInterface,
@@ -10,18 +9,16 @@ import {
     MarkAsSeenSchemaInterface,
 } from '@/schemas/conversation.schema';
 import HttpException from '@/exceptions/httpException';
-import { conversationDocument, ConversationModel } from '@/models/conversation.model';
 import { UserDocument } from '@/models/auth.model';
-import { Server } from 'socket.io';
 import { Message } from '@/interfaces/models.interface';
+import { io } from '@/server';
 
 class ConversationController extends BaseController {
-    private conversationService: ConversationService;
-    private userService: UserService;
-    constructor() {
+    constructor(
+        private readonly conversationService: ConversationService,
+        private readonly userService: UserService
+    ) {
         super();
-        this.conversationService = new ConversationService();
-        this.userService = new UserService();
     }
 
     public getConversation = async (
@@ -92,8 +89,6 @@ class ConversationController extends BaseController {
             const userId = req.params.id;
             const recipientId = req.query.recipientId;
             const content = req.body.content;
-
-            const io = App.initiator;
 
             const peers = [userId, recipientId];
 
@@ -257,7 +252,6 @@ class ConversationController extends BaseController {
             const localUser = res.locals.user as UserDocument;
             const userId = localUser._id as string;
             const recipientId = req.query.recipientId;
-            const io = App.initiator;
 
             const peers = [userId, recipientId];
             const { recipient } = await this.conversationService.validateConversation(

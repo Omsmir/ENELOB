@@ -10,16 +10,12 @@ import { messageSchema } from "@/lib/vaildation";
 import { DashboardHook } from "../../context/Dashboardprovider";
 import { Mutations } from "@/actions/mutations";
 import { useSession } from "@/components/store/slices/AuthReducer";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/components/store/store";
-import { TagFaces } from "@mui/icons-material";
-import EmojiPicker from "emoji-picker-react";
-import ReusableDialog from "@/components/Dialog";
 
-const Emulator = () => {
-  const { api, contextHolder, isLoading, friend } = DashboardHook();
-  const [emojiMenuState, setEmojiMenuState] = useState(false);
+const ConversationMessageSend = () => {
+  const { api, isLoading, friend } = DashboardHook();
 
   const { session } = useSession();
 
@@ -73,16 +69,11 @@ const Emulator = () => {
     }
   };
 
-  const handleEmojiMenu = () => {
-    setEmojiMenuState(!emojiMenuState);
-  };
-
   useEffect(() => {
     form.clearErrors("content");
   }, [conversationId]);
   return (
     <Form {...form}>
-      {contextHolder}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex justify-center items-center  max-h-[70px] "
@@ -122,4 +113,4 @@ const Emulator = () => {
   );
 };
 
-export default Emulator;
+export default ConversationMessageSend;
